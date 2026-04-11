@@ -1,0 +1,2 @@
+# amanda
+Assistente pessoal Amanda
