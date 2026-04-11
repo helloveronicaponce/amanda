@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#f7e8ee" />
+  <title>Amanda</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icon-192.png" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Amanda" />
+  <style>
+    :root {
+      --bg: #fdfaf7;
+      --card: #ffffff;
+      --pink: #f7c8d6;
+      --pink-soft: #fce7ee;
+      --green: #c8e6c9;
+      --green-soft: #e8f5e9;
+      --text: #2e2e2e;
+      --muted: #8a8a8a;
+      --border: #ececec;
+      --accent: #6b9b76;
+      --accent-dark: #4f7a5a;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body {
+      margin: 0; padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    header {
+      padding: 18px 20px 14px;
+      display: flex; align-items: center; gap: 12px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, var(--pink-soft) 0%, var(--bg) 100%);
+    }
+    header .logo {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--pink) 0%, var(--green) 100%);
+      display: grid; place-items: center;
+      font-weight: 700; color: #fff; font-size: 20px;
+    }
+    header h1 { margin: 0; font-size: 20px; font-weight: 600; }
+    header .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    header .right { margin-left: auto; }
+    header button.icon-btn {
+      background: transparent; border: none; color: var(--muted);
+      font-size: 20px; cursor: pointer; padding: 8px;
+    }
+    main { padding: 20px; max-width: 640px; margin: 0 auto; }
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 18px; margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+    .card h2 { margin: 0 0 12px; font-size: 15px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    textarea {
+      width: 100%; min-height: 120px;
+      border: 1px solid var(--border); border-radius: 12px;
+      padding: 14px; font-size: 16px; font-family: inherit;
+      resize: vertical; background: #fafafa;
+      color: var(--text);
+    }
+    textarea:focus { outline: none; border-color: var(--accent); background: #fff; }
+    .row { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+    .btn {
+      flex: 1; min-width: 120px;
+      padding: 14px 16px; border-radius: 12px; border: none;
+      font-size: 15px; font-weight: 600; cursor: pointer;
+      transition: transform 0.05s, opacity 0.2s;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:disabled { opacity: 0.5; }
+    .btn-secondary {
+      background: var(--pink-soft); color: var(--text);
+      border: 1px solid var(--pink);
+    }
+    .file-label {
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 6px; cursor: pointer;
+    }
+    input[type=file] { display: none; }
+    .preview {
+      display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px;
+    }
+    .preview .thumb {
+      position: relative; width: 70px; height: 70px;
+      border-radius: 10px; overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .preview .thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .preview .thumb .x {
+      position: absolute; top: 2px; right: 2px;
+      background: rgba(0,0,0,0.6); color: #fff;
+      width: 20px; height: 20px; border-radius: 50%;
+      display: grid; place-items: center; font-size: 12px;
+      cursor: pointer;
+    }
+    .status {
+      padding: 10px 14px; border-radius: 10px; font-size: 14px;
+      margin-top: 12px; display: none;
+    }
+    .status.show { display: block; }
+    .status.success { background: var(--green-soft); color: var(--accent-dark); border: 1px solid var(--green); }
+    .status.error { background: #fde8e8; color: #b91c1c; border: 1px solid #fbbcbc; }
+    .status.info { background: var(--pink-soft); color: #8a4a5a; border: 1px solid var(--pink); }
+
+    .history-item {
+      padding: 12px 0; border-bottom: 1px solid var(--border);
+    }
+    .history-item:last-child { border-bottom: none; }
+    .history-item .meta {
+      font-size: 11px; color: var(--muted);
+      display: flex; gap: 8px; align-items: center; margin-bottom: 4px;
+    }
+    .history-item .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 10px;
+      font-size: 10px; font-weight: 600; text-transform: uppercase;
+    }
+    .badge.pending { background: #fef3c7; color: #92400e; }
+    .badge.processing { background: #dbeafe; color: #1e40af; }
+    .badge.processed { background: var(--green-soft); color: var(--accent-dark); }
+    .badge.error { background: #fde8e8; color: #b91c1c; }
+    .history-item .text {
+      font-size: 14px; line-height: 1.4;
+      white-space: pre-wrap; word-wrap: break-word;
+    }
+    .history-item .imgs { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+    .history-item .imgs img { width: 50px; height: 50px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); }
+    .history-item .summary { font-size: 12px; color: var(--accent-dark); margin-top: 4px; font-style: italic; }
+
+    /* Auth screen */
+    #auth-screen {
+      min-height: 100vh; display: grid; place-items: center;
+      padding: 24px; background: linear-gradient(180deg, var(--pink-soft) 0%, var(--green-soft) 100%);
+    }
+    #auth-screen .auth-card {
+      background: #fff; padding: 32px; border-radius: 20px;
+      max-width: 360px; width: 100%; text-align: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+    #auth-screen .logo-big {
+      width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 20px;
+      background: linear-gradient(135deg, var(--pink) 0%, var(--green) 100%);
+      display: grid; place-items: center;
+      font-size: 36px; font-weight: 700; color: #fff;
+    }
+    #auth-screen h1 { margin: 0 0 8px; font-size: 24px; }
+    #auth-screen p { margin: 0 0 24px; color: var(--muted); font-size: 14px; }
+    #auth-screen input {
+      width: 100%; padding: 14px; border-radius: 12px;
+      border: 1px solid var(--border); font-size: 16px;
+      margin-bottom: 12px;
+    }
+    #auth-screen input:focus { outline: none; border-color: var(--accent); }
+    .hidden { display: none !important; }
+    .empty-state {
+      text-align: center; padding: 24px; color: var(--muted); font-size: 14px;
+    }
+    .spinner {
+      display: inline-block; width: 14px; height: 14px;
+      border: 2px solid #fff; border-top-color: transparent;
+      border-radius: 50%; animation: spin 0.6s linear infinite;
+      vertical-align: middle; margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <!-- AUTH SCREEN -->
+  <div id="auth-screen">
+    <div class="auth-card">
+      <div class="logo-big">A</div>
+      <h1>Amanda</h1>
+      <p>Sua assistente pessoal. Entre com seu e-mail para começar.</p>
+      <input type="email" id="email-input" placeholder="seu@email.com" autocomplete="email" />
+      <button class="btn btn-primary" id="send-link-btn" style="width:100%;">Enviar link de acesso</button>
+      <div class="status" id="auth-status"></div>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="app" class="hidden">
+    <header>
+      <div class="logo">A</div>
+      <div>
+        <h1>Amanda</h1>
+        <div class="sub" id="user-email"></div>
+      </div>
+      <div class="right">
+        <button class="icon-btn" id="logout-btn" title="Sair">↪</button>
+      </div>
+    </header>
+
+    <main>
+      <div class="card">
+        <h2>Mandar pra Amanda</h2>
+        <textarea id="texto" placeholder="Digite ou cole aqui... Ex: 'paguei R$50 no mercado', 'comprar leite', 'marca pediatra Gael quinta 14h'"></textarea>
+
+        <div class="preview" id="preview"></div>
+
+        <div class="row">
+          <label class="btn btn-secondary file-label" for="camera-input">📷 Foto</label>
+          <input type="file" id="camera-input" accept="image/*" capture="environment" multiple />
+
+          <label class="btn btn-secondary file-label" for="gallery-input">🖼️ Galeria</label>
+          <input type="file" id="gallery-input" accept="image/*,application/pdf" multiple />
+        </div>
+
+        <div class="row">
+          <button class="btn btn-primary" id="send-btn">Enviar</button>
+        </div>
+
+        <div class="status" id="send-status"></div>
+      </div>
+
+      <div class="card">
+        <h2>Histórico recente</h2>
+        <div id="history">
+          <div class="empty-state">Carregando...</div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+    const SUPABASE_URL = 'https://qwlegnebejakwwuntyrd.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_q_ACTFhH48bhOGAmbVP73g_RSlgs69W';
+    const BUCKET = 'amanda-uploads';
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+    });
+
+    // ----- DOM -----
+    const $ = (id) => document.getElementById(id);
+    const authScreen = $('auth-screen');
+    const app = $('app');
+    const emailInput = $('email-input');
+    const sendLinkBtn = $('send-link-btn');
+    const authStatus = $('auth-status');
+    const userEmail = $('user-email');
+    const logoutBtn = $('logout-btn');
+    const texto = $('texto');
+    const cameraInput = $('camera-input');
+    const galleryInput = $('gallery-input');
+    const previewEl = $('preview');
+    const sendBtn = $('send-btn');
+    const sendStatus = $('send-status');
+    const historyEl = $('history');
+
+    let pendingFiles = [];
+
+    // ----- AUTH -----
+    function showStatus(el, msg, kind) {
+      el.textContent = msg;
+      el.className = 'status show ' + (kind || 'info');
+    }
+    function hideStatus(el) { el.className = 'status'; el.textContent = ''; }
+
+    async function checkSession() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        showApp(session.user);
+      } else {
+        showAuth();
+      }
+    }
+
+    function showAuth() {
+      authScreen.classList.remove('hidden');
+      app.classList.add('hidden');
+    }
+
+    function showApp(user) {
+      authScreen.classList.add('hidden');
+      app.classList.remove('hidden');
+      userEmail.textContent = user.email;
+      loadHistory();
+      subscribeToInbox();
+    }
+
+    sendLinkBtn.addEventListener('click', async () => {
+      const email = emailInput.value.trim();
+      if (!email) { showStatus(authStatus, 'Digite seu e-mail.', 'error'); return; }
+      sendLinkBtn.disabled = true;
+      sendLinkBtn.innerHTML = '<span class="spinner"></span>Enviando...';
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: window.location.href }
+      });
+      sendLinkBtn.disabled = false;
+      sendLinkBtn.textContent = 'Enviar link de acesso';
+      if (error) {
+        showStatus(authStatus, 'Erro: ' + error.message, 'error');
+      } else {
+        showStatus(authStatus, '✓ Link enviado! Confira seu e-mail.', 'success');
+      }
+    });
+
+    logoutBtn.addEventListener('click', async () => {
+      if (confirm('Sair da conta?')) {
+        await supabase.auth.signOut();
+        location.reload();
+      }
+    });
+
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) showApp(session.user);
+      if (event === 'SIGNED_OUT') showAuth();
+    });
+
+    // ----- FILE HANDLING -----
+    function addFiles(fileList) {
+      for (const f of fileList) {
+        pendingFiles.push(f);
+      }
+      renderPreview();
+    }
+
+    function renderPreview() {
+      previewEl.innerHTML = '';
+      pendingFiles.forEach((f, idx) => {
+        const div = document.createElement('div');
+        div.className = 'thumb';
+        if (f.type.startsWith('image/')) {
+          const img = document.createElement('img');
+          img.src = URL.createObjectURL(f);
+          div.appendChild(img);
+        } else {
+          div.style.background = '#eee';
+          div.style.display = 'grid';
+          div.style.placeItems = 'center';
+          div.textContent = 'PDF';
+        }
+        const x = document.createElement('div');
+        x.className = 'x';
+        x.textContent = '×';
+        x.onclick = () => { pendingFiles.splice(idx, 1); renderPreview(); };
+        div.appendChild(x);
+        previewEl.appendChild(div);
+      });
+    }
+
+    cameraInput.addEventListener('change', (e) => { addFiles(e.target.files); e.target.value = ''; });
+    galleryInput.addEventListener('change', (e) => { addFiles(e.target.files); e.target.value = ''; });
+
+    // ----- UPLOAD + INSERT -----
+    async function compressImage(file) {
+      if (!file.type.startsWith('image/')) return file;
+      try {
+        const bitmap = await createImageBitmap(file);
+        const maxSide = 1600;
+        let { width, height } = bitmap;
+        if (Math.max(width, height) > maxSide) {
+          const scale = maxSide / Math.max(width, height);
+          width = Math.round(width * scale);
+          height = Math.round(height * scale);
+        }
+        const canvas = new OffscreenCanvas(width, height);
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(bitmap, 0, 0, width, height);
+        const blob = await canvas.convertToBlob({ type: 'image/jpeg', quality: 0.82 });
+        return new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' });
+      } catch {
+        return file;
+      }
+    }
+
+    sendBtn.addEventListener('click', async () => {
+      const text = texto.value.trim();
+      if (!text && pendingFiles.length === 0) {
+        showStatus(sendStatus, 'Escreva algo ou anexe uma imagem.', 'error');
+        return;
+      }
+      sendBtn.disabled = true;
+      sendBtn.innerHTML = '<span class="spinner"></span>Enviando...';
+      hideStatus(sendStatus);
+
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('Sessão expirou');
+
+        const uploadedPaths = [];
+        for (const f of pendingFiles) {
+          const compressed = await compressImage(f);
+          const ext = compressed.name.split('.').pop().toLowerCase();
+          const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
+          const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, compressed, {
+            contentType: compressed.type, upsert: false
+          });
+          if (upErr) throw upErr;
+          uploadedPaths.push({ path, type: compressed.type, name: f.name });
+        }
+
+        const { error: insErr } = await supabase.from('amanda_inbox').insert({
+          user_id: user.id,
+          texto: text || null,
+          imagens: uploadedPaths,
+          origem: 'pwa',
+          status: 'pending'
+        });
+        if (insErr) throw insErr;
+
+        texto.value = '';
+        pendingFiles = [];
+        renderPreview();
+        showStatus(sendStatus, '✓ Enviado pra Amanda. Ela vai processar em alguns minutos.', 'success');
+        loadHistory();
+      } catch (err) {
+        showStatus(sendStatus, 'Erro: ' + (err.message || err), 'error');
+      } finally {
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'Enviar';
+      }
+    });
+
+    // ----- HISTORY -----
+    async function loadHistory() {
+      const { data, error } = await supabase
+        .from('amanda_inbox')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(20);
+      if (error) {
+        historyEl.innerHTML = '<div class="empty-state">Erro ao carregar.</div>';
+        return;
+      }
+      if (!data || data.length === 0) {
+        historyEl.innerHTML = '<div class="empty-state">Nada por aqui ainda. Manda alguma coisa pra Amanda lá em cima.</div>';
+        return;
+      }
+      historyEl.innerHTML = '';
+      for (const row of data) {
+        const div = document.createElement('div');
+        div.className = 'history-item';
+        const when = new Date(row.created_at).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+        const status = row.status || 'pending';
+        let html = `<div class="meta"><span>${when}</span><span class="badge ${status}">${status}</span></div>`;
+        if (row.texto) html += `<div class="text">${escapeHtml(row.texto)}</div>`;
+        if (row.imagens && row.imagens.length > 0) {
+          html += '<div class="imgs">';
+          for (const img of row.imagens) {
+            const { data: signed } = await supabase.storage.from(BUCKET).createSignedUrl(img.path, 3600);
+            if (signed && signed.signedUrl) {
+              html += `<img src="${signed.signedUrl}" alt="" />`;
+            }
+          }
+          html += '</div>';
+        }
+        if (row.action_summary) html += `<div class="summary">→ ${escapeHtml(row.action_summary)}</div>`;
+        div.innerHTML = html;
+        historyEl.appendChild(div);
+      }
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, c => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+      }[c]));
+    }
+
+    function subscribeToInbox() {
+      supabase.channel('inbox-changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'amanda_inbox' }, () => {
+          loadHistory();
+        })
+        .subscribe();
+    }
+
+    // ----- SERVICE WORKER -----
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js').catch(() => {});
+    }
+
+    // ----- BOOT -----
+    checkSession();
+  </script>
+</body>
+</html>
