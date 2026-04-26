@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Painel Amanda">
+<title>Amanda — Painel</title>
+<link rel="manifest" href="../manifest.json">
+<link rel="apple-touch-icon" href="../icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@1,400;1,500&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+:root {
+  --off-white: #FFFCF4;
+  --black:     #0F0F0F;
+  --pink:      #FF8FB8;
+  --lime:      #D4FF3D;
+  --black-60:  rgba(15,15,15,0.60);
+  --black-30:  rgba(15,15,15,0.30);
+  --black-12:  rgba(15,15,15,0.12);
+  --black-06:  rgba(15,15,15,0.06);
+  --pink-20:   rgba(255,143,184,0.18);
+  --lime-20:   rgba(212,255,61,0.22);
+  --font-d: 'Inter', system-ui, sans-serif;
+  --font-i: 'EB Garamond', Georgia, serif;
+  --r-md: 18px; --r-lg: 24px; --r-pill: 999px;
+  --shadow: 0 4px 16px rgba(15,15,15,0.07);
+  --ease: cubic-bezier(0.32,0.72,0,1); --dur: 200ms;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{height:100%;-webkit-tap-highlight-color:transparent}
+body{background:var(--off-white);color:var(--black);font-family:var(--font-d);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh;padding-bottom:env(safe-area-inset-bottom)}
+
+/* ══ AUTH SCREEN ══ */
+#auth-screen{
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:32px 24px;background:var(--black);padding-top:calc(32px + env(safe-area-inset-top))
+}
+.auth-stamp{
+  width:64px;height:64px;border-radius:var(--r-pill);background:var(--pink);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:900;font-size:28px;color:var(--off-white);letter-spacing:-.04em;margin-bottom:24px
+}
+.auth-title{font-weight:900;font-size:28px;color:var(--off-white);letter-spacing:-.03em;line-height:1;margin-bottom:8px;text-align:center}
+.auth-sub{font-family:var(--font-i);font-style:italic;font-size:15px;color:rgba(255,252,244,.45);text-align:center;margin-bottom:36px}
+.auth-box{background:rgba(255,252,244,.05);border:1px solid rgba(255,252,244,.10);border-radius:var(--r-lg);padding:24px;width:100%;max-width:360px}
+.auth-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,252,244,.35);margin-bottom:8px}
+.auth-input{
+  width:100%;padding:14px 16px;background:rgba(255,252,244,.08);border:1px solid rgba(255,252,244,.12);
+  border-radius:var(--r-md);font-family:var(--font-d);font-size:16px;color:var(--off-white);
+  outline:none;transition:border-color var(--dur) var(--ease);margin-bottom:14px
+}
+.auth-input:focus{border-color:var(--pink)}
+.auth-input::placeholder{color:rgba(255,252,244,.25)}
+.auth-btn{
+  width:100%;padding:16px;background:var(--pink);border:none;border-radius:var(--r-pill);
+  font-family:var(--font-d);font-weight:700;font-size:14px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--off-white);cursor:pointer;transition:opacity var(--dur) var(--ease)
+}
+.auth-btn:active{opacity:.8}
+.auth-btn:disabled{opacity:.4;cursor:not-allowed}
+.auth-msg{margin-top:16px;padding:12px 16px;border-radius:var(--r-md);font-size:13px;line-height:1.4;display:none;text-align:center}
+.auth-msg.ok{display:block;background:var(--lime-20);color:var(--black);border:1px solid rgba(212,255,61,.3)}
+.auth-msg.err{display:block;background:var(--pink-20);color:var(--off-white);border:1px solid rgba(255,143,184,.3)}
+
+/* ══ APP ══ */
+#app{display:none}
+
+/* HEADER */
+.header{background:var(--black);color:var(--off-white);padding:16px 20px 14px;padding-top:calc(16px + env(safe-area-inset-top));display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:100}
+.header-stamp{width:40px;height:40px;background:var(--pink);border-radius:var(--r-pill);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;color:var(--off-white);flex-shrink:0;letter-spacing:-.04em}
+.header-label{font-weight:900;font-size:16px;color:var(--off-white);letter-spacing:-.02em;line-height:1}
+.header-sub{font-family:var(--font-i);font-style:italic;font-size:12px;color:rgba(255,252,244,.40);margin-top:2px}
+.header-date{margin-left:auto;text-align:right;font-size:9px;color:rgba(255,252,244,.30);font-weight:700;letter-spacing:.07em;text-transform:uppercase;line-height:1.6}
+.sync-dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--lime);margin-right:4px;vertical-align:middle;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.reload-btn{background:none;border:none;color:rgba(255,252,244,.35);font-size:18px;cursor:pointer;padding:4px 0 4px 8px;line-height:1;flex-shrink:0}
+.reload-btn:active{color:var(--off-white)}
+.logout-btn{background:none;border:none;color:rgba(255,252,244,.25);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;padding:4px 0 4px 4px;line-height:1;flex-shrink:0}
+.logout-btn:active{color:var(--pink)}
+
+/* TABS */
+.tabs-wrap{background:var(--black);overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;border-bottom:1px solid rgba(255,252,244,.08);position:sticky;top:calc(64px + env(safe-area-inset-top));z-index:99}
+.tabs-wrap::-webkit-scrollbar{display:none}
+.tabs{display:flex;align-items:stretch;padding:0 12px;padding-right:32px;gap:0}
+.tab{padding:10px 12px 8px;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:rgba(255,252,244,.30);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;flex-shrink:0;transition:color var(--dur) var(--ease),border-color var(--dur) var(--ease);user-select:none;-webkit-user-select:none}
+.tab:active{opacity:.7}
+.tab.active{color:var(--off-white);border-bottom-color:var(--pink)}
+.badge{display:inline-flex;align-items:center;justify-content:center;background:rgba(255,252,244,.10);color:rgba(255,252,244,.40);font-size:9px;font-weight:900;border-radius:var(--r-pill);padding:1px 5px;margin-left:4px;letter-spacing:.04em}
+.tab.active .badge{background:var(--pink);color:var(--off-white)}
+.badge.urgent{background:rgba(255,143,184,.20);color:var(--pink)}
+.tab.active .badge.urgent{background:var(--pink);color:var(--off-white)}
+
+/* PANELS */
+.panels{padding:16px 14px 60px}
+.panel{display:none}
+.panel.active{display:block}
+
+/* CAPSULE */
+.capsule{display:inline-flex;align-items:center;gap:5px;padding:5px 12px 6px;background:var(--black);color:var(--off-white);border-radius:var(--r-pill);font-weight:700;font-size:10px;letter-spacing:.08em;text-transform:uppercase;line-height:1;white-space:nowrap}
+.capsule .dot{color:var(--pink);font-size:13px;line-height:0;vertical-align:middle}
+.capsule.is-pink{background:var(--pink);color:var(--off-white)}
+.capsule.is-lime{background:var(--lime);color:var(--black)}
+.capsule.is-lime .dot{color:var(--black)}
+.capsule.is-ghost{background:transparent;color:var(--black-60);border:1.5px solid var(--black-12)}
+
+/* SECTION */
+.section{background:white;border-radius:var(--r-md);margin-bottom:10px;overflow:hidden;box-shadow:var(--shadow)}
+.section-header{padding:12px 16px 10px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--black-06)}
+.section-count{margin-left:auto;font-family:var(--font-i);font-style:italic;font-size:12px;color:var(--black-30)}
+
+/* ITEM */
+.item{padding:10px 16px;border-bottom:1px solid var(--black-06);display:flex;align-items:flex-start;gap:10px}
+.item:last-child{border-bottom:none}
+.item-marker{width:8px;height:8px;border-radius:50%;background:var(--black-12);margin-top:5px;flex-shrink:0}
+.item-marker.urgent{background:var(--pink)}
+.item-marker.warn{background:var(--black-60)}
+.item-marker.ok{background:var(--lime)}
+.item-marker.solid{background:var(--black)}
+.item-text{flex:1;color:var(--black);line-height:1.45}
+.item-text strong{font-weight:700}
+.item-text.done{text-decoration:line-through;color:var(--black-30)}
+.item-tag{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:2px 7px;border-radius:var(--r-pill);background:var(--black-06);color:var(--black-60);margin-left:4px}
+.item-date{font-family:var(--font-i);font-style:italic;font-size:11px;color:var(--black-30);white-space:nowrap;margin-left:auto;padding-left:8px}
+.item-date.urgent{font-family:var(--font-d);font-style:normal;font-weight:700;font-size:9px;letter-spacing:.07em;text-transform:uppercase;color:var(--pink)}
+.item-date.warn{font-family:var(--font-d);font-style:normal;font-weight:700;font-size:9px;letter-spacing:.07em;text-transform:uppercase;color:var(--black-60)}
+
+/* ALERT CARD */
+.alert-card{border-radius:var(--r-md);padding:14px 16px;margin-bottom:8px;display:flex;gap:12px;align-items:flex-start;background:white;box-shadow:var(--shadow)}
+.alert-card.critical{border-left:3px solid var(--pink)}
+.alert-card.warn{border-left:3px solid var(--black-30)}
+.alert-card.info{border-left:3px solid var(--black-12)}
+.alert-card.ok{border-left:3px solid var(--lime)}
+.alert-level{font-weight:900;font-size:9px;letter-spacing:.10em;text-transform:uppercase;padding:4px 8px;border-radius:var(--r-pill);flex-shrink:0;margin-top:1px;line-height:1}
+.alert-level.critical{background:var(--pink-20);color:var(--black)}
+.alert-level.warn{background:var(--black-06);color:var(--black-60)}
+.alert-level.info{background:var(--black-06);color:var(--black-30)}
+.alert-level.ok{background:var(--lime-20);color:var(--black)}
+.alert-content{flex:1}
+.alert-title{font-weight:700;font-size:13px;color:var(--black);line-height:1.3;margin-bottom:3px}
+.alert-desc{font-family:var(--font-i);font-style:italic;font-size:12px;color:var(--black-60);line-height:1.4}
+
+/* HERO BAND */
+.hero-band{background:var(--pink);border-radius:var(--r-lg);padding:18px 20px;margin-bottom:14px;display:flex;align-items:center;gap:16px}
+.hero-band-num{font-weight:900;font-size:clamp(44px,12vw,68px);color:var(--off-white);letter-spacing:-.04em;line-height:1}
+.hero-band-text .title{font-weight:900;font-size:14px;color:var(--off-white);line-height:1.2}
+.hero-band-text .sub{font-family:var(--font-i);font-style:italic;font-size:12px;color:rgba(255,252,244,.65);margin-top:4px}
+
+/* PROFILE CARD */
+.profile-card{background:var(--black);border-radius:var(--r-lg);padding:18px;margin-bottom:10px;display:flex;align-items:center;gap:14px}
+.profile-initial{width:48px;height:48px;border-radius:var(--r-pill);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;letter-spacing:-.04em;flex-shrink:0}
+.profile-info .name{font-weight:900;font-size:17px;color:var(--off-white);letter-spacing:-.02em;line-height:1}
+.profile-info .age{font-family:var(--font-i);font-style:italic;font-size:12px;color:rgba(255,252,244,.45);margin-top:4px}
+.profile-info .next{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--lime);margin-top:6px}
+
+/* SUBHEADER */
+.subheader{padding:6px 16px;font-weight:700;font-size:9px;letter-spacing:.09em;text-transform:uppercase;color:var(--black-30);background:var(--black-06);border-top:1px solid var(--black-06);border-bottom:1px solid var(--black-06)}
+
+/* EMPTY / LOADING */
+.empty{padding:20px 16px;font-family:var(--font-i);font-style:italic;font-size:13px;color:var(--black-30);text-align:center}
+.loading{padding:20px 16px;text-align:center;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--black-30)}
+.live-tag{display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--lime);margin-left:auto;background:rgba(212,255,61,.12);padding:3px 8px;border-radius:var(--r-pill)}
+.live-tag::before{content:'';display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--lime)}
+
+/* PROGRESSO REFORMA */
+.progress-wrap{padding:12px 16px;border-bottom:1px solid var(--black-06)}
+.progress-bar-bg{height:5px;background:var(--black-06);border-radius:var(--r-pill);overflow:hidden;margin-top:6px}
+.progress-bar-fill{height:100%;background:var(--lime);border-radius:var(--r-pill);transition:width .6s var(--ease)}
+.progress-label{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--black-30);display:flex;justify-content:space-between}
+
+/* FIN ITEM */
+.fin-item{padding:9px 16px;border-bottom:1px solid var(--black-06);display:flex;align-items:center;gap:10px}
+.fin-item:last-child{border-bottom:none}
+.fin-valor{font-weight:700;font-size:13px;margin-left:auto;white-space:nowrap}
+.fin-desc{flex:1;font-size:13px;color:var(--black)}
+.fin-cat{font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--black-30);margin-top:2px}
+</style>
+</head>
+<body>
+
+<!-- ══ AUTH SCREEN ══ -->
+<div id="auth-screen">
+  <div class="auth-stamp">A</div>
+  <div class="auth-title">Amanda</div>
+  <div class="auth-sub">Painel da Verô</div>
+  <div class="auth-box">
+    <div class="auth-label">Seu e-mail</div>
+    <input class="auth-input" type="email" id="auth-email" placeholder="veetty@gmail.com" autocomplete="email" inputmode="email">
+    <button class="auth-btn" id="auth-btn" onclick="sendMagicLink()">Enviar link de acesso</button>
+    <div class="auth-msg" id="auth-msg"></div>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
+<div id="app">
+
+<div class="header">
+  <div class="header-stamp">A</div>
+  <div>
+    <div class="header-label">Amanda</div>
+    <div class="header-sub">Painel da Verô</div>
+  </div>
+  <div class="header-date" id="headerDate"></div>
+  <button class="reload-btn" onclick="reloadAll()" title="Atualizar">↻</button>
+  <button class="logout-btn" onclick="doLogout()" title="Sair">Sair</button>
+</div>
+
+<div class="tabs-wrap">
+  <div class="tabs">
+    <div class="tab active" data-tab="alertas">Alertas <span class="badge urgent" id="badge-alertas">…</span></div>
+    <div class="tab" data-tab="lorenzo">Lorenzo</div>
+    <div class="tab" data-tab="leonardo">Leonardo</div>
+    <div class="tab" data-tab="gael">Gael</div>
+    <div class="tab" data-tab="alberto">Alberto</div>
+    <div class="tab" data-tab="casa">Casa <span class="badge" id="badge-casa">…</span></div>
+    <div class="tab" data-tab="financeiro">Financeiro <span class="badge" id="badge-fin">…</span></div>
+    <div class="tab" data-tab="compras">Compras</div>
+    <div class="tab" data-tab="pendencias">Pendências</div>
+    <div class="tab" data-tab="wishlist">Wishlist</div>
+  </div>
+</div>
+
+<div class="panels">
+
+  <!-- ══ ALERTAS ══ -->
+  <div class="panel active" id="panel-alertas">
+    <div class="hero-band">
+      <div class="hero-band-num" id="hero-num">…</div>
+      <div class="hero-band-text">
+        <div class="title">Alertas ativos hoje</div>
+        <div class="sub" id="hero-sub">carregando…</div>
+      </div>
+    </div>
+    <div class="alert-card critical">
+      <span class="alert-level critical">Crítico</span>
+      <div class="alert-content">
+        <div class="alert-title">Figurinos Festa Junina — pendente para os 4</div>
+        <div class="alert-desc">Separar: base branca + chapéu de palha + lenço azul + fitas.</div>
+      </div>
+    </div>
+    <div class="alert-card critical">
+      <span class="alert-level critical">Crítico</span>
+      <div class="alert-content">
+        <div class="alert-title">OBAFOG Lorenzo — inscrição atrasada</div>
+        <div class="alert-desc">Prazo original foi 10/04. Ligar na escola pra confirmar se ainda aceita.</div>
+      </div>
+    </div>
+    <div class="alert-card warn">
+      <span class="alert-level warn">Atenção</span>
+      <div class="alert-content">
+        <div class="alert-title">Ingressos Festa Junina Ecologia</div>
+        <div class="alert-desc">Vendas abertas desde 22/04. Comprar na secretaria — R$ 40/cada.</div>
+      </div>
+    </div>
+    <div class="alert-card info">
+      <span class="alert-level info">Info</span>
+      <div class="alert-content">
+        <div class="alert-title">Livro "A Tribo Panapá" — Leonardo</div>
+        <div class="alert-desc">Estoque limitado na secretaria do Ecologia. Garantir logo.</div>
+      </div>
+    </div>
+    <div id="alertas-reforma"></div>
+    <div id="alertas-fin"></div>
+    <div class="alert-card ok">
+      <span class="alert-level ok">Resolvido</span>
+      <div class="alert-content">
+        <div class="alert-title">Endocrinopediatra Leonardo — agendado</div>
+        <div class="alert-desc">Dr. Gustavo Lahan — 25/06/2026 às 11h. Confirmado.</div>
+      </div>
+    </div>
+    <div class="alert-card ok">
+      <span class="alert-level ok">Resolvido</span>
+      <div class="alert-content">
+        <div class="alert-title">Unimed R$ 1.240 — paga</div>
+        <div class="alert-desc">Confirmado no Supabase — status: pago.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ LORENZO ══ -->
+  <div class="panel" id="panel-lorenzo">
+    <div class="profile-card">
+      <div class="profile-initial" style="background:var(--pink);color:var(--off-white)">L</div>
+      <div class="profile-info">
+        <div class="name">Lorenzo</div>
+        <div class="age">12 anos · nasceu 29/03/2014</div>
+        <div class="next">Próximo aniversário — 29/03/2027</div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-header"><span class="capsule">Escola</span></div>
+      <div class="item"><div class="item-marker solid"></div><div class="item-text">Colégio Ecologia — Unidade Fundamental Maior <span class="item-tag">separado dos irmãos</span></div></div>
+      <div class="item"><div class="item-marker"></div><div class="item-text">Comunicados via ClassApp — sem integração direta</div></div>
+    </div>
+    <div class="section">
+      <div class="section-header"><span class="capsule is-pink">Pendências <span class="dot">·</span> Ativas</span></div>
+      <div class="item"><div class="item-marker urgent"></div><div class="item-text"><strong>Figurinos Festa Junina</strong> — base branca + chapéu + lenço + fitas</div><div class="item-date urgent">urgente</div></div>
+      <div class="item"><div class="item-marker warn"></div><div class="item-text"><strong>OBAFOG 06/05</strong> — perguntar se quer ir + confirmar custo transporte</div><div class="item-date warn">essa semana</div></div>
+      <div class="item"><div class="item-marker warn"></div><div class="item-text"><strong>Ingressos Festa Junina</strong> — comprar na secretaria R$ 40/cada</div><div class="item-date warn">essa semana</div></div>
+      <div class="item"><div class="item-marker"></div><div class="item-text"><strong>Marcar oftalmo</strong> — retorno acompanhamento uso de óculos</div><div class="item-date">em aberto</div></div>
+      <div class="item"><div class="item-marker"></div><div class="item-text"><strong>Cancelar Totalpass</strong> do Lorenzo</div><div class="item-date">em aberto</div></div>
+      <div class="item"><div class="item-marker"></div><div class="item-text"><strong>Comprar livro</strong> "A Turma da Rua Quinze"</div><div class="item-date">em aberto</div></div>
+    </div>
+    <div class="section">
+      <div class="section-header"><span class="capsule">Saúde</span></div>
+      <div class="item"><div class="item-marker warn"></div><div class="item-text"><strong>Exame de sangue</strong> — guia desde nov/2025. Agendar laboratório Unimed.</div></div>
+      <div class="item"><div class="item-marker"></div><div class="item-text">Sem terapia ou médico recorrente no momento</div></div>
+    </div>
+    <div class="section">
+      <div class="section-header"><span class="capsule">Próximos eventos</span></div>
+      <div class="item"><div class="item-marker solid"></div><div class="item-text"><strong>OBAFOG</strong> — 06/05/2026 (aguardando confirmação)</div></div>
+    </div>
+  </div>
+
+  <!-- ══ LEONARDO ══ -->
+  <div class="panel" id="panel-leonardo">
+    <div class="profile-card">
+      <div class="profile-initial" style="background:var(--lime);color:var(--black)">L</div>
+      <div class="profile-info">
+        <div class="name">Leonardo</div>
+        <div class="age">9 anos · faz 10 em 12/08/2026</div>
+        <div class="next" id="leo-bday"></div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-header"><span class="capsule">Escola</span></div>
+      <div class="item"><div class="item-marker solid"></div><div class="item-text">Colégio Ecologia — Unidade Menores</div></div>
+    </div>
+    <div class="section">
+      <div class="section-header"><span class="capsule is-pink">Pendências <span class="dot">·</span> Ativas</span></div>
+      <div class="item"><div class="item-marker urgent"></div><div class="item-text"><strong>Figurinos Festa Junina</strong> — base branca + chapéu + lenço + fitas</div><div class="item-date urgent">urgente</div></div>
+      <div class="item"><div class="item-marker warn"></div><div class="item-text"><strong>Enviar atestado dentista no ClassApp</strong> — perdeu prova</div><div class="item-date warn">essa semana</div></div>
+      <div class="item"><div class="item-marker warn"></div><div class="item-text"><strong>Ingressos Festa Junina</strong> — comprar na secretaria R$ 40/cada</div><div class="item-date warn">essa semana</div></div>
+      <div class="item"><div class="item-marker"></div><div class="item-text"><strong>Artsmile</strong> — verificar plano de aparelho</div><div class="item-date">em aberto</div></div>
+    </div>
+    <div class="section">
+      <div class="section-header"><span class="capsule">Saúde</span></div>
+      <div class="item"><div class="item-marker ok"></div><div class="item-text"><strong>Endocrinopediatra</strong> — Dr. Gustavo Lahan — 25/06/2026 às 11h</div></div>
+      <div class="item"><div class="item-marker warn"></div><div class="item-text"><strong>Exame de sangue</strong> — guia desde nov/2025. Agendar Unimed.</div></div>
+      <div class="item"><div class="item-marker"></div><div class="item-text"><strong>Terapia</strong> — dia, horário e profissional a preencher</div></div>
+    </div>
+    <div class="section">
+      <div class="section-header"><span class="capsule">Materiais</span></div>
+      <div class="item"><div class="item-marker warn"></div><div class="item-text">Livro "A Tribo Panapá" — secretaria do Ecologia (estoque limitado)</div></div>
+    </div>
+  </div>
+
+  <!-- ══ GAEL ══ -->
+  <div class="panel" id="panel-gael">
+    <div class="profile-card">
+      <div class="profile-initial" style="background:rgba(255,252,244,.12);color:var(--off-white)">G</div>
+      <div class="profile-info">
+        <div class="name">Gael</div>
+        <div class="age">5 anos · faz 6 em 04/08/2026</div>
+        <div class="next" id="gael-bday"></div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-header"><span class="capsule">Escola</span></div>
+      <div class="item"><div class="item-marker solid"></div><div class="item-text">Colégio Ecologia — Unidade Menores</div></div>
+    </div>
+    <div class="section">
+      <div class="section-header"><span class="capsule is-pink">Pendências <span class="dot">·</span> Ativas</span></div>
+      <div class="item"><div class="item-marker urgent"></div><div class="item-text"><strong>Figurinos Festa Junina</strong> — base branca + chapéu + lenço + fitas</div><div class="item-date urgent">urgente</div></div>
+      <div class="item"><div class="item-marker warn"></div><div class="item-text"><strong>Ingressos Festa Junina</strong> — comprar na secretaria R$ 40/cada</div><div class="item-date warn">essa semana</div></div>
+    </div>
+    <div class="section">
+      <div class="section-header"><span class="capsule">Saúde</span></div>
+      <div class="item"><div class="item-marker warn"></div><div class="item-text"><strong>Vacinas pendentes</strong> — conferir caderneta</div></div>
+      <div class="item"><div class="item-marker warn"></div><div class="item-text"><strong>Exame de sangue</strong> — guia desde nov/2025. Agendar Unimed.</div></div>
+      <div class="item"><div class="item-marker ok"></div><div class="item-text">Sem terapia no momento</div></div>
+    </div>
+  </div>
+
+  <!-- ══ ALBERTO ══ -->
+  <div class="panel" id="panel-alberto">
+    <div class="profile-card">
+      <div class="profile-initial" style="background:rgba(212,255,61,.18);color:var(--lime)">A</div>
+      <div class="profile-info">
+        <div class="name">Alberto</div>
+        <div class="age">3 anos · faz 4 em 13/10/2026</div>
+        <div class="next" id="alberto-bday"></div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-header"><span class="capsule">Escola</span></div>
+      <div class="item"><div class="item-marker solid"></div><div class="item-text">Colégio Ecologia — Unidade Menores</div></div>
+    </div>
+    <div class="section">
+      <div class="section-header"><span class="capsule is-pink">Pendências <span class="dot">·</span> Ativas</span></div>
+      <div class="item"><div class="item-marker urgent"></div><div class="item-text"><strong>Figurinos Festa Junina</strong> — base branca + chapéu + lenço + fitas</div><div class="item-date urgent">urgente</div></div>
+      <div class="item"><div class="item-marker warn"></div><div class="item-text"><strong>Ingressos Festa Junina</strong> — comprar na secretaria R$ 40/cada</div><div class="item-date warn">essa semana</div></div>
+    </div>
+    <div class="section">
+      <div class="section-header"><span class="capsule">Saúde</span></div>
+      <div class="item"><div class="item-marker warn"></div><div class="item-text"><strong>Exame de sangue</strong> — guia desde nov/2025. Agendar Unimed.</div></div>
+      <div class="item"><div class="item-marker ok"></div><div class="item-text">Sem terapia no momento</div></div>
+      <div class="item"><div class="item-marker"></div><div class="item-text"><strong>Lembrete GCal</strong> — marcar pediatra anual (20/10/2026)</div></div>
+    </div>
+  </div>
+
+  <!-- ══ CASA ══ -->
+  <div class="panel" id="panel-casa">
+    <div class="section" id="reforma-section">
+      <div class="section-header">
+        <span class="capsule is-pink">Reforma</span>
+        <span class="live-tag">ao vivo</span>
+      </div>
+      <div class="loading" id="reforma-loading">Buscando dados…</div>
+      <div id="reforma-content" style="display:none"></div>
+    </div>
+    <div class="section">
+      <div class="section-header"><span class="capsule">Pendências Casa</span></div>
+      <div class="item"><div class="item-marker"></div><div class="item-text"><strong>Verificar mudança TP4 → TP2</strong></div></div>
+      <div class="item"><div class="item-marker warn"></div><div class="item-text"><strong>Acompanhar sinistro Spin</strong> — cobrar se parado</div></div>
+    </div>
+  </div>
+
+  <!-- ══ FINANCEIRO ══ -->
+  <div class="panel" id="panel-financeiro">
+    <div class="section" id="fin-section">
+      <div class="section-header">
+        <span class="capsule">Mês atual</span>
+        <span class="live-tag">ao vivo</span>
+      </div>
+      <div class="loading" id="fin-loading">Buscando dados…</div>
+      <div id="fin-content" style="display:none"></div>
+    </div>
+    <div class="section" id="fin-prox-section" style="display:none">
+      <div class="section-header">
+        <span class="capsule is-ghost">Próximo mês <span class="dot">·</span> Pendentes</span>
+      </div>
+      <div id="fin-prox-content"></div>
+    </div>
+  </div>
+
+  <!-- ══ COMPRAS ══ -->
+  <div class="panel" id="panel-compras">
+    <div class="section">
+      <div class="section-header"><span class="capsule">Mercado <span class="dot">·</span> Essa semana</span></div>
+      <div class="subheader">Hortifrúti</div>
+      <div class="item"><div class="item-marker warn"></div><div class="item-text">Alface · Brócolis · Abobrinha · Tomate · Cebola · Alho · Limão</div></div>
+      <div class="item"><div class="item-marker warn"></div><div class="item-text">Melancia · Banana · Maçã · Morango · Manga · Batata</div></div>
+      <div class="subheader">Mercearia</div>
+      <div class="item"><div class="item-marker warn"></div><div class="item-text">Ovos · Feijão · Macarrão espaguete · Parafuso</div></div>
+      <div class="item"><div class="item-marker warn"></div><div class="item-text">Arroz · Açúcar · Molho de tomate · Ketchup · Mostarda · Maionese</div></div>
+      <div class="item"><div class="item-marker warn"></div><div class="item-text">Queijo · Presunto · Café</div></div>
+      <div class="subheader">Higiene</div>
+      <div class="item"><div class="item-marker warn"></div><div class="item-text">Sabonete líquido corporal · Shampoo · Papel higiênico · Papel toalha</div></div>
+    </div>
+    <div class="section">
+      <div class="section-header"><span class="capsule">Carnes <span class="dot">·</span> Proteínas</span></div>
+      <div class="item"><div class="item-marker solid"></div><div class="item-text">Contrafilé — 3kg · Frango (sassami, ostrinha, peito) · Linguiça — 2 pct · Carne moída</div></div>
+    </div>
+    <div class="section">
+      <div class="section-header"><span class="capsule">Laticínios <span class="dot">·</span> Padaria</span></div>
+      <div class="item"><div class="item-marker solid"></div><div class="item-text">Leite — 5 caixas · Iogurte · Leite condensado — 2cx · Pão hambúrguer — 12un</div></div>
+      <div class="item"><div class="item-marker solid"></div><div class="item-text">Nescau · Chocolate 50% · Cereal matinal · Coca-Cola 1L</div></div>
+    </div>
+    <div class="section">
+      <div class="section-header"><span class="capsule">Escola <span class="dot">·</span> Lanche</span></div>
+      <div class="item"><div class="item-marker"></div><div class="item-text">Bisnaguinha · Queijo muçarela fatiado · Presunto · Requeijão</div></div>
+      <div class="item"><div class="item-marker"></div><div class="item-text">Iogurte pack · Suco caixinha · Achocolatado · Biscoito · Bolacha · Pão de queijo · Barra cereal</div></div>
+    </div>
+    <div class="section">
+      <div class="section-header"><span class="capsule">Beleza <span class="dot">·</span> Farmácia</span></div>
+      <div class="item"><div class="item-marker"></div><div class="item-text"><strong>Granado Cera Nutritiva Pink 7g</strong> — R$ 25,56 — já no carrinho Amazon</div></div>
+      <div class="item"><div class="item-marker"></div><div class="item-text">Pasta de dente · Shampoo anticaspa</div></div>
+    </div>
+  </div>
+
+  <!-- ══ PENDÊNCIAS ══ -->
+  <div class="panel" id="panel-pendencias">
+    <div class="section">
+      <div class="section-header"><span class="capsule is-pink">Vence hoje <span class="dot">·</span> amanhã</span><span class="section-count">1 item</span></div>
+      <div class="item"><div class="item-marker urgent"></div><div class="item-text"><strong>Separar figurinos Festa Junina</strong> — base branca + chapéu palha + lenço azul + fitas — para os 4<span class="item-tag">escola</span><span class="item-tag">casa</span></div></div>
+    </div>
+    <div class="section">
+      <div class="section-header"><span class="capsule">Essa semana</span><span class="section-count">4 itens</span></div>
+      <div class="item"><div class="item-marker warn"></div><div class="item-text"><strong>Perguntar ao Lorenzo sobre OBAFOG</strong> (06/05) + confirmar custo transporte<span class="item-tag">escola</span></div></div>
+      <div class="item"><div class="item-marker warn"></div><div class="item-text"><strong>Enviar atestado dentista Leonardo no ClassApp</strong><span class="item-tag">escola</span><span class="item-tag">saúde</span></div></div>
+      <div class="item"><div class="item-marker warn"></div><div class="item-text"><strong>Comprar ingressos Festa Junina</strong> na secretaria — R$ 40 cada<span class="item-tag">escola</span></div></div>
+      <div class="item"><div class="item-marker warn"></div><div class="item-text"><strong>Levar 4 crianças pro exame de sangue</strong> — agendar lab Unimed<span class="item-tag">saúde</span></div></div>
+    </div>
+    <div class="section">
+      <div class="section-header"><span class="capsule">Em aberto</span></div>
+      <div class="item"><div class="item-marker"></div><div class="item-text">Comprar livro "A turma da rua Quinze" pra Lorenzo<span class="item-tag">criança</span></div></div>
+      <div class="item"><div class="item-marker"></div><div class="item-text">Contratar depilação a laser — Espaço Laser<span class="item-tag">pessoal</span></div></div>
+      <div class="item"><div class="item-marker"></div><div class="item-text">Verificar mudança TP4 → TP2<span class="item-tag">casa</span></div></div>
+      <div class="item"><div class="item-marker"></div><div class="item-text">Cancelar Totalpass do Lorenzo<span class="item-tag">pessoal</span></div></div>
+      <div class="item"><div class="item-marker"></div><div class="item-text">Fazer sobrancelha e levar cartão fidelidade<span class="item-tag">pessoal</span></div></div>
+      <div class="item"><div class="item-marker"></div><div class="item-text">Marcar massagem Face Ativa<span class="item-tag">pessoal</span></div></div>
+      <div class="item"><div class="item-marker"></div><div class="item-text">Marcar drenagem (Buddha Spa?)<span class="item-tag">pessoal</span></div></div>
+      <div class="item"><div class="item-marker"></div><div class="item-text">Levar Gael pra vacinar — conferir caderneta<span class="item-tag">saúde</span></div></div>
+      <div class="item"><div class="item-marker"></div><div class="item-text">Acompanhar sinistro do carro (Spin)<span class="item-tag">casa</span></div></div>
+      <div class="item"><div class="item-marker"></div><div class="item-text">Marcar oftalmo Lorenzo — retorno óculos<span class="item-tag">saúde</span></div></div>
+      <div class="item"><div class="item-marker"></div><div class="item-text">Artsmile — verificar plano de aparelho do Leo<span class="item-tag">saúde</span></div></div>
+    </div>
+    <div class="section">
+      <div class="section-header"><span class="capsule is-lime">Feito <span class="dot" style="color:var(--black)">·</span> Últimos 7 dias</span></div>
+      <div class="item"><div class="item-marker ok"></div><div class="item-text done">Marcar consulta endocrinopediatra Leo — 17/04</div></div>
+      <div class="item"><div class="item-marker ok"></div><div class="item-text done">Lembrar Lorenzo de revisar SAE Livro 1 — 22/04</div></div>
+      <div class="item"><div class="item-marker ok"></div><div class="item-text done">Unimed R$ 1.240 — paga</div></div>
+    </div>
+  </div>
+
+  <!-- ══ WISHLIST ══ -->
+  <div class="panel" id="panel-wishlist">
+    <div class="section">
+      <div class="section-header"><span class="capsule">Roupas <span class="dot">·</span> Calçados</span></div>
+      <div class="item"><div class="item-marker solid"></div><div class="item-text"><strong>Tênis da Feet of Tomorrow</strong></div><div class="item-date">adic. 12/04</div></div>
+    </div>
+    <div class="section">
+      <div class="section-header"><span class="capsule">Beleza <span class="dot">·</span> Cuidados</span></div>
+      <div class="item">
+        <div class="item-marker"></div>
+        <div class="item-text">
+          <strong>Creme hidratante unhas e cutículas</strong><br>
+          <span style="font-size:12px;color:var(--black-60);font-family:'EB Garamond',serif;font-style:italic">1º Granado Cera Nutritiva Pink 7g — R$ 26–29</span><br>
+          <span style="font-size:12px;color:var(--black-60);font-family:'EB Garamond',serif;font-style:italic">2º Granado Creme Cutículas Pink 100g</span><br>
+          <span style="font-size:12px;color:var(--black-60);font-family:'EB Garamond',serif;font-style:italic">3º Bepantol Derma 20g — R$ 19–30</span>
+        </div>
+        <div class="item-date">adic. 10/04</div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-header"><span class="capsule">Experiências</span></div>
+      <div class="item"><div class="item-marker"></div><div class="item-text"><strong>Massagem Face Ativa</strong> — marcar quando der</div></div>
+      <div class="item"><div class="item-marker"></div><div class="item-text"><strong>Drenagem</strong> — Buddha Spa ou similar</div></div>
+    </div>
+  </div>
+
+</div><!-- /panels -->
+</div><!-- /app -->
+
+<script>
+// ── CONFIG ───────────────────────────────────────────────
+const SUPABASE_URL  = 'https://qwlegnebejakwwuntyrd.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF3bGVnbmViZWpha3d3dW50eXJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2OTUxODYsImV4cCI6MjA5MTI3MTE4Nn0.lkYjF5xXwS_XW8Wi-p0YBBOxY7Bjs_HDw7PIWDTcPYQ';
+const REDIRECT_URL  = 'https://helloveronicaponce.github.io/amanda/painel/';
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+// ── AUTH ─────────────────────────────────────────────────
+async function init() {
+  // Processar token da URL (retorno do magic link)
+  const { data: { session }, error } = await sb.auth.getSession();
+
+  if (session) {
+    showApp();
+  } else {
+    // Tenta trocar código/token da URL pelo Supabase
+    const { data, error: exchErr } = await sb.auth.exchangeCodeForSession(window.location.search);
+    if (data?.session) {
+      // Limpa a URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+      showApp();
+    } else {
+      showAuth();
+    }
+  }
+}
+
+function showAuth() {
+  document.getElementById('auth-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+}
+
+function showApp() {
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  startApp();
+}
+
+async function sendMagicLink() {
+  const email = document.getElementById('auth-email').value.trim();
+  const btn   = document.getElementById('auth-btn');
+  const msg   = document.getElementById('auth-msg');
+
+  if (!email) { showMsg('err', 'Digita o e-mail primeiro.'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Enviando…';
+  msg.className = 'auth-msg';
+
+  const { error } = await sb.auth.signInWithOtp({
+    email,
+    options: { emailRedirectTo: REDIRECT_URL }
+  });
+
+  if (error) {
+    showMsg('err', 'Erro ao enviar o link. Tenta de novo.');
+    btn.disabled = false;
+    btn.textContent = 'Enviar link de acesso';
+  } else {
+    showMsg('ok', 'Link enviado! Abre o e-mail e clica no link.');
+    btn.textContent = 'Link enviado ✓';
+  }
+}
+
+function showMsg(type, text) {
+  const el = document.getElementById('auth-msg');
+  el.textContent = text;
+  el.className = 'auth-msg ' + type;
+}
+
+async function doLogout() {
+  await sb.auth.signOut();
+  showAuth();
+}
+
+// Enter no input dispara o envio
+document.getElementById('auth-email').addEventListener('keydown', e => {
+  if (e.key === 'Enter') sendMagicLink();
+});
+
+// ── APP ──────────────────────────────────────────────────
+function startApp() {
+  const now = new Date();
+
+  // Header date
+  const dayName = now.toLocaleDateString('pt-BR',{weekday:'short'}).toUpperCase();
+  document.getElementById('headerDate').innerHTML =
+    `<span class="sync-dot"></span>${dayName} ${now.getDate()} ${now.toLocaleDateString('pt-BR',{month:'short'}).toUpperCase()}<br><span style="font-size:8px;letter-spacing:.04em;opacity:.4">SUPABASE LIVE</span>`;
+
+  // Aniversários
+  function daysUntil(m,d){
+    const y=now.getFullYear(); let next=new Date(y,m-1,d);
+    if(next<=now) next=new Date(y+1,m-1,d);
+    return Math.ceil((next-now)/86400000);
+  }
+  [{id:'leo-bday',m:8,d:12},{id:'gael-bday',m:8,d:4},{id:'alberto-bday',m:10,d:13}]
+    .forEach(({id,m,d})=>{ const el=document.getElementById(id); if(el) el.textContent=`Aniversário daqui a ${daysUntil(m,d)} dias`; });
+
+  // Tabs
+  document.querySelectorAll('.tab').forEach(tab=>{
+    tab.addEventListener('click',()=>{
+      const target=tab.dataset.tab;
+      document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('panel-'+target).classList.add('active');
+      tab.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+    });
+  });
+
+  updateHero();
+  reloadAll();
+}
+
+// ── SUPABASE REST ────────────────────────────────────────
+async function sbGet(path, params='') {
+  const { data: { session } } = await sb.auth.getSession();
+  const token = session?.access_token || SUPABASE_ANON;
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}${params}`, {
+    headers: {
+      'apikey': SUPABASE_ANON,
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    }
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+const brl = v => 'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+// ── REFORMA ─────────────────────────────────────────────
+async function loadReforma(){
+  try {
+    const rows = await sbGet('reforma_items',
+      '?select=comodo_label,descricao,status,prazo&order=ordem_comodo.asc,ordem_item.asc'
+    );
+    const grupos = {};
+    rows.forEach(r=>{
+      if(!grupos[r.comodo_label]) grupos[r.comodo_label]=[];
+      grupos[r.comodo_label].push(r);
+    });
+    const total   = rows.length;
+    const done    = rows.filter(r=>r.status==='done').length;
+    const pct     = total ? Math.round(done/total*100) : 0;
+    const pending = rows.filter(r=>r.status==='pending');
+
+    document.getElementById('badge-casa').textContent = pending.length || '✓';
+
+    const alertasDiv = document.getElementById('alertas-reforma');
+    alertasDiv.innerHTML = '';
+    pending.filter(r=>r.prazo).forEach(r=>{
+      alertasDiv.innerHTML += `<div class="alert-card warn"><span class="alert-level warn">Reforma</span><div class="alert-content"><div class="alert-title">${r.comodo_label} — ${r.descricao}</div><div class="alert-desc">Prazo: ${r.prazo} · ainda pendente</div></div></div>`;
+    });
+
+    let html = `<div class="progress-wrap"><div class="progress-label"><span>${done} de ${total} concluídos</span><span>${pct}%</span></div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${pct}%"></div></div></div>`;
+    Object.entries(grupos).forEach(([label, items])=>{
+      const pItems = items.filter(i=>i.status==='pending');
+      const dItems = items.filter(i=>i.status==='done');
+      html += `<div class="subheader">${label} — ${dItems.length}/${items.length} ok</div>`;
+      pItems.forEach(i=>{ html+=`<div class="item"><div class="item-marker warn"></div><div class="item-text">${i.descricao}</div></div>`; });
+      dItems.forEach(i=>{ html+=`<div class="item"><div class="item-marker ok"></div><div class="item-text done">${i.descricao}</div></div>`; });
+    });
+
+    document.getElementById('reforma-loading').style.display='none';
+    const c=document.getElementById('reforma-content');
+    c.innerHTML=html; c.style.display='block';
+    updateHero();
+  } catch(e){
+    document.getElementById('reforma-loading').textContent='Erro ao carregar reforma.';
+  }
+}
+
+// ── FINANCEIRO ───────────────────────────────────────────
+async function loadFinanceiro(){
+  try {
+    const now = new Date();
+    const mesAtual = now.toISOString().slice(0,7);
+    const mesProx  = new Date(now.getFullYear(), now.getMonth()+1, 1).toISOString().slice(0,7);
+
+    const rows = await sbGet('financial_data','?id=eq.1&select=data');
+    const data    = rows[0]?.data || {};
+    const atual   = data[mesAtual]  || [];
+    const proximo = data[mesProx]   || [];
+
+    const pendentes = atual.filter(i=>i.status==='pendente'||i.status==='agendado');
+    const pagos     = atual.filter(i=>i.status==='pago');
+    const totalIn   = pagos.filter(i=>i.tipo==='in').reduce((s,i)=>s+Number(i.valor),0);
+    const totalOut  = pagos.filter(i=>i.tipo==='out').reduce((s,i)=>s+Number(i.valor),0);
+    const saldo     = totalIn - totalOut;
+
+    document.getElementById('badge-fin').textContent = pendentes.length || '✓';
+
+    const alertasFinDiv = document.getElementById('alertas-fin');
+    alertasFinDiv.innerHTML = '';
+    pendentes.forEach(i=>{
+      const venc = i.venc ? new Date(i.venc+'T00:00:00') : null;
+      const dias = venc ? Math.ceil((venc-now)/86400000) : null;
+      const urg  = dias !== null && dias <= 3;
+      alertasFinDiv.innerHTML += `<div class="alert-card ${urg?'critical':'warn'}"><span class="alert-level ${urg?'critical':'warn'}">${urg?'Vence em breve':'Pendente'}</span><div class="alert-content"><div class="alert-title">${i.desc} — ${brl(i.valor)}</div><div class="alert-desc">Venc. ${i.venc||'—'} · ${i.cat}${i.obs?' · '+i.obs:''}</div></div></div>`;
+    });
+
+    let html = `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:12px 16px;border-bottom:1px solid var(--black-06)">
+      <div><div style="font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--black-30);margin-bottom:4px">Receitas</div><div style="font-weight:900;font-size:15px">${brl(totalIn)}</div></div>
+      <div><div style="font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--black-30);margin-bottom:4px">Despesas</div><div style="font-weight:900;font-size:15px">${brl(totalOut)}</div></div>
+      <div><div style="font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--black-30);margin-bottom:4px">Saldo</div><div style="font-weight:900;font-size:15px;color:${saldo>=0?'#1a1a1a':'var(--pink)'}">${brl(saldo)}</div></div>
+    </div>`;
+    if(pendentes.length>0){
+      html+=`<div class="subheader">Pendentes — ${pendentes.length}</div>`;
+      pendentes.forEach(i=>{ html+=`<div class="fin-item"><div class="item-marker urgent"></div><div><div class="fin-desc"><strong>${i.desc}</strong></div><div class="fin-cat">${i.cat} · venc. ${i.venc||'—'}</div></div><div class="fin-valor">${brl(i.valor)}</div></div>`; });
+    }
+    html+=`<div class="subheader">Pagos — ${pagos.length}</div>`;
+    pagos.slice().sort((a,b)=>(b.pag||'').localeCompare(a.pag||'')).forEach(i=>{
+      html+=`<div class="fin-item"><div class="item-marker ${i.tipo==='in'?'ok':'solid'}"></div><div><div class="fin-desc">${i.desc}</div><div class="fin-cat">${i.cat}${i.pag?' · '+i.pag:''}</div></div><div class="fin-valor">${i.tipo==='in'?'+':'−'}${brl(i.valor)}</div></div>`;
+    });
+
+    document.getElementById('fin-loading').style.display='none';
+    const fc=document.getElementById('fin-content');
+    fc.innerHTML=html; fc.style.display='block';
+
+    if(proximo.length>0){
+      const pp=proximo.filter(i=>i.status==='pendente'||i.status==='agendado');
+      if(pp.length>0){
+        let ph='';
+        pp.forEach(i=>{ ph+=`<div class="fin-item"><div class="item-marker warn"></div><div><div class="fin-desc">${i.desc}</div><div class="fin-cat">${i.cat} · venc. ${i.venc||'—'}</div></div><div class="fin-valor">${brl(i.valor)}</div></div>`; });
+        document.getElementById('fin-prox-content').innerHTML=ph;
+        document.getElementById('fin-prox-section').style.display='block';
+      }
+    }
+    updateHero();
+  } catch(e){
+    document.getElementById('fin-loading').textContent='Erro ao carregar financeiro.';
+  }
+}
+
+// ── HERO ─────────────────────────────────────────────────
+const FIXOS = 4;
+function updateHero(){
+  const din = document.querySelectorAll('#alertas-reforma .alert-card, #alertas-fin .alert-card').length;
+  const total = FIXOS + din;
+  const crit  = document.querySelectorAll('.alert-card.critical').length;
+  document.getElementById('hero-num').textContent = total;
+  document.getElementById('hero-sub').textContent = `${crit} crítico${crit!==1?'s':''} · reforma e finanças ao vivo`;
+  document.getElementById('badge-alertas').textContent = total;
+}
+
+// ── RELOAD ───────────────────────────────────────────────
+async function reloadAll(){
+  document.getElementById('reforma-loading').style.display='block';
+  document.getElementById('reforma-loading').textContent='Buscando dados…';
+  document.getElementById('reforma-content').style.display='none';
+  document.getElementById('fin-loading').style.display='block';
+  document.getElementById('fin-loading').textContent='Buscando dados…';
+  document.getElementById('fin-content').style.display='none';
+  document.getElementById('fin-prox-section').style.display='none';
+  await Promise.all([loadReforma(), loadFinanceiro()]);
+}
+
+// ── INIT ─────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
