@@ -3,897 +3,1316 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <meta name="theme-color" content="#f7e8ee" />
+  <meta name="theme-color" content="#0F0F0F" />
   <title>Amanda</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icon-192.png" />
   <link rel="apple-touch-icon" href="icon-192.png" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Amanda" />
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@1,400;1,500&family=Inter:wght@400;700;900&display=swap" rel="stylesheet" />
   <style>
+    /* ══ TOKENS ══════════════════════════════════════════ */
     :root {
-      --bg: #fdfaf7;
-      --card: #ffffff;
-      --pink: #f7c8d6;
-      --pink-soft: #fce7ee;
-      --green: #c8e6c9;
-      --green-soft: #e8f5e9;
-      --text: #2e2e2e;
-      --muted: #8a8a8a;
-      --border: #ececec;
-      --accent: #6b9b76;
-      --accent-dark: #4f7a5a;
-      --bubble-user: #6b9b76;
+      /* Paleta editorial */
+      --off-white: #FFFCF4;
+      --black:     #0F0F0F;
+      --pink:      #FF8FB8;
+      --lime:      #D4FF3D;
+      --black-60:  rgba(15,15,15,0.60);
+      --black-30:  rgba(15,15,15,0.30);
+      --black-12:  rgba(15,15,15,0.12);
+      --black-06:  rgba(15,15,15,0.06);
+      --pink-20:   rgba(255,143,184,0.18);
+      --lime-20:   rgba(212,255,61,0.22);
+      /* Chat */
+      --bubble-user: #FF8FB8;
       --bubble-amanda: #ffffff;
+      --chat-bg: #FFFCF4;
+      /* Tipografia */
+      --font-d: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-i: 'EB Garamond', Georgia, serif;
+      /* Forma */
+      --r-sm: 12px; --r-md: 18px; --r-lg: 24px; --r-pill: 999px;
+      --shadow: 0 4px 16px rgba(15,15,15,0.07);
+      --ease: cubic-bezier(0.32,0.72,0,1); --dur: 200ms;
+      /* Nav */
+      --nav-h: 60px;
     }
 
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-    html, body {
-      margin: 0; padding: 0;
+    *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html { height: 100%; }
+    body {
+      background: var(--off-white);
+      color: var(--black);
+      font-family: var(--font-d);
+      font-size: 14px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
       height: 100dvh;
       overflow: hidden;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: var(--bg);
-      color: var(--text);
     }
 
-    /* ── AUTH SCREEN ─────────────────────────────── */
+    /* ══ AUTH ════════════════════════════════════════════ */
     #auth-screen {
       height: 100dvh;
-      display: grid; place-items: center;
-      padding: 24px;
-      background: linear-gradient(180deg, var(--pink-soft) 0%, var(--green-soft) 100%);
-    }
-    .auth-card {
-      background: #fff; padding: 32px; border-radius: 20px;
-      max-width: 360px; width: 100%; text-align: center;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    }
-    .logo-big {
-      width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 20px;
-      background: linear-gradient(135deg, var(--pink) 0%, var(--green) 100%);
-      display: grid; place-items: center;
-      font-size: 36px; font-weight: 700; color: #fff;
-    }
-    .auth-card h1 { margin: 0 0 8px; font-size: 24px; }
-    .auth-card p { margin: 0 0 24px; color: var(--muted); font-size: 14px; }
-    .auth-card input {
-      width: 100%; padding: 14px; border-radius: 12px;
-      border: 1px solid var(--border); font-size: 16px;
-      margin-bottom: 12px; font-family: inherit;
-    }
-    .auth-card input:focus { outline: none; border-color: var(--accent); }
-    .auth-msg {
-      margin-top: 12px; padding: 10px 14px; border-radius: 10px;
-      font-size: 14px; display: none;
-    }
-    .auth-msg.show { display: block; }
-    .auth-msg.success { background: var(--green-soft); color: var(--accent-dark); border: 1px solid var(--green); }
-    .auth-msg.error { background: #fde8e8; color: #b91c1c; border: 1px solid #fbbcbc; }
-    .auth-msg.info { background: var(--pink-soft); color: #8a4a5a; border: 1px solid var(--pink); }
-
-    /* ── APP SHELL ───────────────────────────────── */
-    #app {
-      height: 100dvh;
       display: flex; flex-direction: column;
-      padding-top: env(safe-area-inset-top);
-      padding-bottom: env(safe-area-inset-bottom);
+      align-items: center; justify-content: center;
+      padding: calc(32px + env(safe-area-inset-top)) 24px 32px;
+      background: var(--black);
     }
+    .auth-stamp {
+      width: 64px; height: 64px; border-radius: var(--r-pill);
+      background: var(--pink); display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 28px; color: var(--off-white);
+      letter-spacing: -.04em; margin-bottom: 24px;
+    }
+    .auth-title { font-weight: 900; font-size: 28px; color: var(--off-white); letter-spacing: -.03em; line-height: 1; margin-bottom: 8px; text-align: center; }
+    .auth-sub   { font-family: var(--font-i); font-style: italic; font-size: 15px; color: rgba(255,252,244,.45); text-align: center; margin-bottom: 36px; }
+    .auth-box   { background: rgba(255,252,244,.05); border: 1px solid rgba(255,252,244,.10); border-radius: var(--r-lg); padding: 24px; width: 100%; max-width: 360px; }
+    .auth-label { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,252,244,.35); margin-bottom: 8px; }
+    .auth-input {
+      width: 100%; padding: 14px 16px;
+      background: rgba(255,252,244,.08); border: 1px solid rgba(255,252,244,.12);
+      border-radius: var(--r-md); font-family: var(--font-d); font-size: 16px;
+      color: var(--off-white); outline: none;
+      transition: border-color var(--dur) var(--ease); margin-bottom: 14px;
+    }
+    .auth-input:focus { border-color: var(--pink); }
+    .auth-input::placeholder { color: rgba(255,252,244,.25); }
+    .auth-btn {
+      width: 100%; padding: 16px; background: var(--pink); border: none;
+      border-radius: var(--r-pill); font-family: var(--font-d); font-weight: 700;
+      font-size: 14px; letter-spacing: .06em; text-transform: uppercase;
+      color: var(--off-white); cursor: pointer; transition: opacity var(--dur) var(--ease);
+    }
+    .auth-btn:active { opacity: .8; }
+    .auth-btn:disabled { opacity: .4; cursor: not-allowed; }
+    .auth-msg { margin-top: 16px; padding: 12px 16px; border-radius: var(--r-md); font-size: 13px; line-height: 1.4; display: none; text-align: center; }
+    .auth-msg.ok  { display: block; background: var(--lime-20); color: var(--black); border: 1px solid rgba(212,255,61,.3); }
+    .auth-msg.err { display: block; background: var(--pink-20); color: var(--off-white); border: 1px solid rgba(255,143,184,.3); }
 
-    /* ── HEADER ──────────────────────────────────── */
+    /* ══ APP SHELL ═══════════════════════════════════════ */
+    #app {
+      display: none;
+      height: 100dvh;
+      flex-direction: column;
+      padding-top: env(safe-area-inset-top);
+    }
+    #app.active { display: flex; }
+
+    /* ══ HEADER (dark) ═══════════════════════════════════ */
     .app-header {
       flex-shrink: 0;
+      background: var(--black);
+      color: var(--off-white);
+      padding: 14px 18px 12px;
       display: flex; align-items: center; gap: 12px;
-      padding: 12px 16px 0;
-      background: linear-gradient(180deg, var(--pink-soft) 0%, var(--bg) 100%);
-      border-bottom: 1px solid var(--border);
+      position: relative; z-index: 100;
     }
-    .header-logo {
-      width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
-      background: linear-gradient(135deg, var(--pink) 0%, var(--green) 100%);
-      display: grid; place-items: center;
-      font-weight: 700; color: #fff; font-size: 18px;
+    .header-stamp {
+      width: 38px; height: 38px; border-radius: var(--r-pill);
+      background: var(--pink); display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 17px; color: var(--off-white); flex-shrink: 0; letter-spacing: -.04em;
     }
-    .header-title { font-size: 17px; font-weight: 600; }
-    .header-sub { font-size: 11px; color: var(--muted); }
-    .header-right { margin-left: auto; display: flex; gap: 4px; }
-    .icon-btn {
-      background: transparent; border: none; color: var(--muted);
-      font-size: 20px; cursor: pointer; padding: 8px; border-radius: 8px;
-      line-height: 1;
-    }
-    .icon-btn:hover { background: var(--border); }
+    .header-label { font-weight: 900; font-size: 15px; color: var(--off-white); letter-spacing: -.02em; line-height: 1; }
+    .header-sub   { font-family: var(--font-i); font-style: italic; font-size: 11px; color: rgba(255,252,244,.40); margin-top: 2px; }
+    .header-date  { margin-left: auto; text-align: right; font-size: 9px; color: rgba(255,252,244,.30); font-weight: 700; letter-spacing: .07em; text-transform: uppercase; line-height: 1.6; }
+    .sync-dot     { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--lime); margin-right: 4px; vertical-align: middle; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+    .reload-btn   { background: none; border: none; color: rgba(255,252,244,.35); font-size: 18px; cursor: pointer; padding: 4px 0 4px 8px; line-height: 1; flex-shrink: 0; }
+    .reload-btn:active { color: var(--off-white); }
+    .logout-btn   { background: none; border: none; color: rgba(255,252,244,.25); font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; cursor: pointer; padding: 4px 0 4px 4px; line-height: 1; flex-shrink: 0; }
+    .logout-btn:active { color: var(--pink); }
 
-    /* ── TABS ────────────────────────────────────── */
-    .tabs {
-      display: flex; gap: 0;
-      padding: 0 16px;
-      background: linear-gradient(180deg, var(--bg) 0%, var(--bg) 100%);
-      border-bottom: 1px solid var(--border);
+    /* ══ BODY (scrollable area between header and nav) ══ */
+    .app-body {
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
     }
-    .tab-btn {
-      flex: 1; padding: 10px 0; font-size: 13px; font-weight: 600;
-      background: transparent; border: none; cursor: pointer;
-      color: var(--muted); border-bottom: 2px solid transparent;
-      transition: color 0.15s, border-color 0.15s;
+
+    /* ══ MAIN VIEWS ══════════════════════════════════════ */
+    .main-view { display: none; flex: 1; overflow: hidden; flex-direction: column; }
+    .main-view.active { display: flex; }
+
+    /* ══ BOTTOM NAV (dark) ═══════════════════════════════ */
+    .bottom-nav {
+      flex-shrink: 0;
+      background: var(--black);
+      display: flex;
+      align-items: stretch;
+      height: calc(var(--nav-h) + env(safe-area-inset-bottom));
+      padding-bottom: env(safe-area-inset-bottom);
+      border-top: 1px solid rgba(255,252,244,.08);
+      position: relative; z-index: 100;
     }
-    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .nav-btn {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 4px; border: none; background: transparent;
+      cursor: pointer; color: rgba(255,252,244,.30);
+      font-size: 10px; font-weight: 700; letter-spacing: .07em;
+      text-transform: uppercase; font-family: var(--font-d);
+      transition: color var(--dur) var(--ease);
+      -webkit-user-select: none; user-select: none;
+    }
+    .nav-btn:active { opacity: .7; }
+    .nav-btn.active { color: var(--pink); }
+    .nav-icon { font-size: 22px; line-height: 1; }
+    .nav-badge {
+      position: absolute; top: 8px;
+      background: var(--pink); color: var(--off-white);
+      font-size: 9px; font-weight: 900; border-radius: var(--r-pill);
+      padding: 2px 5px; min-width: 16px; text-align: center;
+      display: none;
+    }
+    .nav-btn.active .nav-badge { background: var(--off-white); color: var(--black); }
+    .nav-btn-inner { position: relative; display: inline-block; }
 
-    /* ── VIEWS ───────────────────────────────────── */
-    .view { display: none; flex: 1; overflow: hidden; flex-direction: column; }
-    .view.active { display: flex; }
-
-    /* ── CHAT MESSAGES ───────────────────────────── */
+    /* ══ ── CHAT VIEW ── ═════════════════════════════════ */
     .chat-messages {
       flex: 1; overflow-y: auto;
       padding: 16px 16px 8px;
       display: flex; flex-direction: column; gap: 10px;
-      background: var(--bg);
+      background: var(--chat-bg);
     }
     .chat-messages::-webkit-scrollbar { width: 4px; }
-    .chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    .chat-messages::-webkit-scrollbar-thumb { background: var(--black-12); border-radius: 4px; }
 
-    .msg-row {
-      display: flex; gap: 8px; align-items: flex-end; max-width: 100%;
-    }
+    .msg-row { display: flex; gap: 8px; align-items: flex-end; max-width: 100%; }
     .msg-row.user { flex-direction: row-reverse; }
-
     .msg-avatar {
       width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
-      background: linear-gradient(135deg, var(--pink) 0%, var(--green) 100%);
-      display: grid; place-items: center;
-      font-weight: 700; color: #fff; font-size: 13px;
-      margin-bottom: 2px;
+      background: var(--pink); display: grid; place-items: center;
+      font-weight: 900; color: var(--off-white); font-size: 13px; margin-bottom: 2px;
     }
-
     .msg-bubble {
-      max-width: 72%;
-      padding: 10px 14px;
-      border-radius: 18px;
-      font-size: 15px; line-height: 1.5;
-      word-break: break-word;
-      white-space: pre-wrap;
+      max-width: 72%; padding: 10px 14px; border-radius: 18px;
+      font-size: 15px; line-height: 1.5; word-break: break-word; white-space: pre-wrap;
     }
     .msg-row.amanda .msg-bubble {
-      background: var(--bubble-amanda);
-      border: 1px solid var(--border);
-      border-bottom-left-radius: 4px;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+      background: var(--bubble-amanda); border: 1px solid var(--black-12);
+      border-bottom-left-radius: 4px; box-shadow: 0 1px 4px rgba(0,0,0,.05);
     }
     .msg-row.user .msg-bubble {
-      background: var(--bubble-user);
-      color: #fff;
-      border-bottom-right-radius: 4px;
+      background: var(--bubble-user); color: var(--off-white); border-bottom-right-radius: 4px;
     }
-
-    .msg-time {
-      font-size: 10px; color: var(--muted);
-      margin-top: 4px; text-align: right;
-    }
+    .msg-time { font-size: 10px; color: var(--black-30); margin-top: 4px; text-align: right; }
     .msg-row.amanda .msg-time { text-align: left; }
+    .msg-imgs { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+    .msg-imgs img { width: 80px; height: 80px; object-fit: cover; border-radius: 10px; border: 1px solid rgba(255,255,255,0.3); cursor: pointer; }
+    .msg-row.amanda .msg-imgs img { border-color: var(--black-12); }
 
-    .msg-imgs {
-      display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px;
-    }
-    .msg-imgs img {
-      width: 80px; height: 80px; object-fit: cover;
-      border-radius: 10px; border: 1px solid rgba(255,255,255,0.3);
-      cursor: pointer;
-    }
-    .msg-row.amanda .msg-imgs img { border-color: var(--border); }
+    .typing-dots { display: flex; gap: 5px; padding: 4px 2px; align-items: center; }
+    .typing-dots span { width: 7px; height: 7px; background: var(--black-30); border-radius: 50%; animation: bounce 1.2s infinite; }
+    .typing-dots span:nth-child(2) { animation-delay: .2s; }
+    .typing-dots span:nth-child(3) { animation-delay: .4s; }
+    @keyframes bounce { 0%,60%,100%{transform:translateY(0);opacity:.5} 30%{transform:translateY(-5px);opacity:1} }
 
-    /* Typing indicator */
-    .typing-dots {
-      display: flex; gap: 5px; padding: 4px 2px; align-items: center;
-    }
-    .typing-dots span {
-      width: 7px; height: 7px; background: var(--muted);
-      border-radius: 50%;
-      animation: bounce 1.2s infinite;
-    }
-    .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
-    .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
-    @keyframes bounce {
-      0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
-      30% { transform: translateY(-5px); opacity: 1; }
-    }
-
-    /* ── INPUT BAR ───────────────────────────────── */
     .input-bar {
-      flex-shrink: 0;
-      display: flex; align-items: flex-end; gap: 8px;
+      flex-shrink: 0; display: flex; align-items: flex-end; gap: 8px;
       padding: 10px 12px 12px;
-      background: var(--card);
-      border-top: 1px solid var(--border);
+      background: white; border-top: 1px solid var(--black-06);
     }
     .input-actions { display: flex; gap: 4px; flex-shrink: 0; }
     .input-wrap { flex: 1; position: relative; }
     textarea#chat-input {
-      width: 100%;
-      padding: 10px 14px;
-      border: 1px solid var(--border);
-      border-radius: 22px;
-      font-size: 15px; font-family: inherit;
-      resize: none; background: #f7f7f7;
-      color: var(--text); max-height: 120px;
-      line-height: 1.4;
-      overflow-y: auto;
+      width: 100%; padding: 10px 14px;
+      border: 1px solid var(--black-12); border-radius: 22px;
+      font-size: 15px; font-family: var(--font-d);
+      resize: none; background: #f7f7f7; color: var(--black);
+      max-height: 120px; line-height: 1.4; overflow-y: auto;
     }
-    textarea#chat-input:focus { outline: none; border-color: var(--accent); background: #fff; }
+    textarea#chat-input:focus { outline: none; border-color: var(--pink); background: #fff; }
 
-    .img-preview-bar {
-      display: flex; gap: 8px; flex-wrap: wrap;
-      padding: 8px 12px 0;
-      background: var(--card);
-    }
+    .img-preview-bar { display: flex; gap: 8px; flex-wrap: wrap; padding: 8px 12px 0; background: white; }
     .img-preview-bar:empty { display: none; }
-    .img-thumb {
-      position: relative; width: 56px; height: 56px;
-      border-radius: 10px; overflow: hidden;
-      border: 1px solid var(--border); flex-shrink: 0;
-    }
+    .img-thumb { position: relative; width: 56px; height: 56px; border-radius: 10px; overflow: hidden; border: 1px solid var(--black-12); flex-shrink: 0; }
     .img-thumb img { width: 100%; height: 100%; object-fit: cover; }
-    .img-thumb .rm {
-      position: absolute; top: 2px; right: 2px;
-      background: rgba(0,0,0,0.6); color: #fff;
-      width: 18px; height: 18px; border-radius: 50%;
-      display: grid; place-items: center; font-size: 11px;
-      cursor: pointer; line-height: 1;
-    }
+    .img-thumb .rm { position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,.6); color: #fff; width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; cursor: pointer; line-height: 1; }
 
+    .icon-btn { background: transparent; border: none; color: var(--black-30); font-size: 20px; cursor: pointer; padding: 8px; border-radius: 8px; line-height: 1; }
+    .icon-btn:hover { background: var(--black-06); }
     .send-btn {
       width: 40px; height: 40px; border-radius: 50%;
-      background: var(--accent); color: #fff; border: none;
-      display: grid; place-items: center; cursor: pointer;
-      font-size: 18px; flex-shrink: 0;
-      transition: background 0.15s, transform 0.1s;
+      background: var(--pink); color: var(--off-white); border: none;
+      display: grid; place-items: center; cursor: pointer; font-size: 18px; flex-shrink: 0;
+      transition: background var(--dur), transform .1s;
     }
-    .send-btn:hover { background: var(--accent-dark); }
-    .send-btn:active { transform: scale(0.92); }
-    .send-btn:disabled { background: var(--border); cursor: not-allowed; }
+    .send-btn:active { transform: scale(.92); }
+    .send-btn:disabled { background: var(--black-12); cursor: not-allowed; }
 
-    /* ── HISTÓRICO VIEW ──────────────────────────── */
-    .historico-list {
-      flex: 1; overflow-y: auto;
-      padding: 12px 16px;
-      display: flex; flex-direction: column; gap: 12px;
-    }
-    .hist-item {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: 14px; overflow: hidden;
-    }
-    .hist-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 10px 14px; cursor: pointer;
-      background: var(--pink-soft);
-    }
-    .hist-header .when { font-size: 11px; color: var(--muted); }
-    .hist-header .preview {
-      font-size: 13px; color: var(--text);
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      max-width: 200px;
-    }
-    .hist-header .chevron { color: var(--muted); font-size: 12px; transition: transform 0.2s; }
-    .hist-item.open .hist-header .chevron { transform: rotate(180deg); }
-    .hist-body { display: none; padding: 12px 14px; }
-    .hist-item.open .hist-body { display: block; }
-    .hist-user-msg {
-      font-size: 14px; line-height: 1.5; color: var(--text);
-      background: var(--pink-soft); border-radius: 10px;
-      padding: 8px 12px; margin-bottom: 8px;
-    }
-    .hist-amanda-msg {
-      font-size: 14px; line-height: 1.5; color: var(--text);
-      white-space: pre-wrap;
-    }
-    .hist-amanda-label {
-      font-size: 11px; font-weight: 600; color: var(--accent);
-      text-transform: uppercase; letter-spacing: 0.5px;
-      margin-bottom: 4px;
-    }
-
-    /* ── SYSTEM NOTICE ───────────────────────────── */
-    .system-msg {
-      text-align: center; font-size: 12px; color: var(--muted);
-      padding: 6px 12px; margin: 4px 0;
-    }
-
-    /* ── UTILS ───────────────────────────────────── */
-    .hidden { display: none !important; }
-    input[type=file] { display: none; }
-    .spinner {
-      display: inline-block; width: 14px; height: 14px;
-      border: 2px solid rgba(255,255,255,0.5); border-top-color: #fff;
-      border-radius: 50%; animation: spin 0.6s linear infinite;
-      vertical-align: middle; margin-right: 4px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .btn {
-      padding: 14px 20px; border-radius: 12px; border: none;
-      font-size: 15px; font-weight: 600; cursor: pointer;
-      font-family: inherit;
-      transition: opacity 0.15s;
-    }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-primary { background: var(--accent); color: #fff; }
-
-    .empty-state {
-      text-align: center; padding: 40px 24px;
-      color: var(--muted); font-size: 14px;
-      line-height: 1.6;
-    }
-    .empty-state .icon { font-size: 36px; margin-bottom: 12px; }
-
-    /* ── SETUP NOTICE ────────────────────────────── */
     .setup-notice {
       margin: 12px 16px; padding: 12px 14px;
       background: #fffbeb; border: 1px solid #fde68a;
-      border-radius: 10px; font-size: 13px; color: #78350f;
-      display: none;
+      border-radius: 10px; font-size: 13px; color: #78350f; display: none;
     }
     .setup-notice.show { display: block; }
-    .setup-notice a { color: var(--accent-dark); }
+    .system-msg { text-align: center; font-size: 12px; color: var(--black-30); padding: 6px 12px; margin: 4px 0; }
+    .empty-state { text-align: center; padding: 40px 24px; color: var(--black-30); font-size: 14px; line-height: 1.6; }
+    .empty-state .icon { font-size: 36px; margin-bottom: 12px; }
+
+    /* ══ ── HISTÓRICO VIEW ── ════════════════════════════ */
+    .historico-list {
+      flex: 1; overflow-y: auto;
+      padding: 12px 16px; display: flex; flex-direction: column; gap: 12px;
+      background: var(--chat-bg);
+    }
+    .hist-item { background: white; border: 1px solid var(--black-12); border-radius: var(--r-md); overflow: hidden; box-shadow: var(--shadow); }
+    .hist-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; cursor: pointer; background: var(--pink-20); }
+    .hist-header .when { font-size: 11px; color: var(--black-30); }
+    .hist-header .preview { font-size: 13px; color: var(--black); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+    .hist-header .chevron { color: var(--black-30); font-size: 12px; transition: transform .2s; }
+    .hist-item.open .hist-header .chevron { transform: rotate(180deg); }
+    .hist-body { display: none; padding: 12px 14px; }
+    .hist-item.open .hist-body { display: block; }
+    .hist-user-msg { font-size: 14px; line-height: 1.5; background: var(--pink-20); border-radius: 10px; padding: 8px 12px; margin-bottom: 8px; }
+    .hist-amanda-msg { font-size: 14px; line-height: 1.5; white-space: pre-wrap; }
+    .hist-amanda-label { font-size: 11px; font-weight: 700; color: var(--pink); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+
+    /* ══ ── PAINEL VIEW ── ═══════════════════════════════ */
+    #view-painel {
+      display: none; flex: 1; overflow: hidden;
+      flex-direction: column; background: var(--off-white);
+    }
+    #view-painel.active { display: flex; }
+
+    /* Sub-tabs do painel (dark) */
+    .painel-tabs-wrap {
+      flex-shrink: 0; background: var(--black);
+      overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+      border-bottom: 1px solid rgba(255,252,244,.08);
+    }
+    .painel-tabs-wrap::-webkit-scrollbar { display: none; }
+    .painel-tabs { display: flex; align-items: stretch; padding: 0 12px 0; padding-right: 32px; gap: 0; }
+    .ptab {
+      padding: 10px 12px 8px; font-size: 10px; font-weight: 700; letter-spacing: .07em;
+      text-transform: uppercase; color: rgba(255,252,244,.30); cursor: pointer;
+      border-bottom: 2px solid transparent; white-space: nowrap; flex-shrink: 0;
+      transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+      user-select: none; -webkit-user-select: none;
+    }
+    .ptab:active { opacity: .7; }
+    .ptab.active { color: var(--off-white); border-bottom-color: var(--pink); }
+    .ptab-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: rgba(255,252,244,.10); color: rgba(255,252,244,.40);
+      font-size: 9px; font-weight: 900; border-radius: var(--r-pill);
+      padding: 1px 5px; margin-left: 4px; letter-spacing: .04em;
+    }
+    .ptab.active .ptab-badge { background: var(--pink); color: var(--off-white); }
+    .ptab-badge.urgent { background: rgba(255,143,184,.20); color: var(--pink); }
+    .ptab.active .ptab-badge.urgent { background: var(--pink); color: var(--off-white); }
+
+    /* Painel panels */
+    .painel-panels { flex: 1; overflow-y: auto; padding: 16px 14px 16px; }
+    .ppanel { display: none; }
+    .ppanel.active { display: block; }
+
+    /* ── Painel components (off-white content area) ── */
+    .capsule { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px 6px; background: var(--black); color: var(--off-white); border-radius: var(--r-pill); font-weight: 700; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; line-height: 1; white-space: nowrap; }
+    .capsule .dot { color: var(--pink); font-size: 13px; line-height: 0; vertical-align: middle; }
+    .capsule.is-pink  { background: var(--pink); color: var(--off-white); }
+    .capsule.is-lime  { background: var(--lime); color: var(--black); }
+    .capsule.is-lime .dot { color: var(--black); }
+    .capsule.is-ghost { background: transparent; color: var(--black-60); border: 1.5px solid var(--black-12); }
+
+    .section { background: white; border-radius: var(--r-md); margin-bottom: 10px; overflow: hidden; box-shadow: var(--shadow); }
+    .section-header { padding: 12px 16px 10px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--black-06); }
+    .section-count  { margin-left: auto; font-family: var(--font-i); font-style: italic; font-size: 12px; color: var(--black-30); }
+
+    .item { padding: 10px 16px; border-bottom: 1px solid var(--black-06); display: flex; align-items: flex-start; gap: 10px; }
+    .item:last-child { border-bottom: none; }
+    .item-marker { width: 8px; height: 8px; border-radius: 50%; background: var(--black-12); margin-top: 5px; flex-shrink: 0; }
+    .item-marker.urgent { background: var(--pink); }
+    .item-marker.warn   { background: var(--black-60); }
+    .item-marker.ok     { background: var(--lime); }
+    .item-marker.solid  { background: var(--black); }
+    .item-text { flex: 1; color: var(--black); line-height: 1.45; }
+    .item-text strong { font-weight: 700; }
+    .item-text.done { text-decoration: line-through; color: var(--black-30); }
+    .item-tag  { display: inline-block; font-size: 9px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; padding: 2px 7px; border-radius: var(--r-pill); background: var(--black-06); color: var(--black-60); margin-left: 4px; }
+    .item-date { font-family: var(--font-i); font-style: italic; font-size: 11px; color: var(--black-30); white-space: nowrap; margin-left: auto; padding-left: 8px; }
+    .item-date.urgent { font-family: var(--font-d); font-style: normal; font-weight: 700; font-size: 9px; letter-spacing: .07em; text-transform: uppercase; color: var(--pink); }
+    .item-date.warn   { font-family: var(--font-d); font-style: normal; font-weight: 700; font-size: 9px; letter-spacing: .07em; text-transform: uppercase; color: var(--black-60); }
+
+    .alert-card { border-radius: var(--r-md); padding: 14px 16px; margin-bottom: 8px; display: flex; gap: 12px; align-items: flex-start; background: white; box-shadow: var(--shadow); }
+    .alert-card.critical { border-left: 3px solid var(--pink); }
+    .alert-card.warn     { border-left: 3px solid var(--black-30); }
+    .alert-card.info     { border-left: 3px solid var(--black-12); }
+    .alert-card.ok       { border-left: 3px solid var(--lime); }
+    .alert-level { font-weight: 900; font-size: 9px; letter-spacing: .10em; text-transform: uppercase; padding: 4px 8px; border-radius: var(--r-pill); flex-shrink: 0; margin-top: 1px; line-height: 1; }
+    .alert-level.critical { background: var(--pink-20); color: var(--black); }
+    .alert-level.warn     { background: var(--black-06); color: var(--black-60); }
+    .alert-level.info     { background: var(--black-06); color: var(--black-30); }
+    .alert-level.ok       { background: var(--lime-20); color: var(--black); }
+    .alert-content  { flex: 1; }
+    .alert-title    { font-weight: 700; font-size: 13px; color: var(--black); line-height: 1.3; margin-bottom: 3px; }
+    .alert-desc     { font-family: var(--font-i); font-style: italic; font-size: 12px; color: var(--black-60); line-height: 1.4; }
+
+    .hero-band { background: var(--pink); border-radius: var(--r-lg); padding: 18px 20px; margin-bottom: 14px; display: flex; align-items: center; gap: 16px; }
+    .hero-band-num { font-weight: 900; font-size: clamp(44px,12vw,68px); color: var(--off-white); letter-spacing: -.04em; line-height: 1; }
+    .hero-band-text .title { font-weight: 900; font-size: 14px; color: var(--off-white); line-height: 1.2; }
+    .hero-band-text .sub   { font-family: var(--font-i); font-style: italic; font-size: 12px; color: rgba(255,252,244,.65); margin-top: 4px; }
+
+    .profile-card { background: var(--black); border-radius: var(--r-lg); padding: 18px; margin-bottom: 10px; display: flex; align-items: center; gap: 14px; }
+    .profile-initial { width: 48px; height: 48px; border-radius: var(--r-pill); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 20px; letter-spacing: -.04em; flex-shrink: 0; }
+    .profile-info .name { font-weight: 900; font-size: 17px; color: var(--off-white); letter-spacing: -.02em; line-height: 1; }
+    .profile-info .age  { font-family: var(--font-i); font-style: italic; font-size: 12px; color: rgba(255,252,244,.45); margin-top: 4px; }
+    .profile-info .next { font-size: 10px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--lime); margin-top: 6px; }
+
+    .subheader { padding: 6px 16px; font-weight: 700; font-size: 9px; letter-spacing: .09em; text-transform: uppercase; color: var(--black-30); background: var(--black-06); border-top: 1px solid var(--black-06); border-bottom: 1px solid var(--black-06); }
+
+    .empty  { padding: 20px 16px; font-family: var(--font-i); font-style: italic; font-size: 13px; color: var(--black-30); text-align: center; }
+    .loading { padding: 20px 16px; text-align: center; font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--black-30); }
+    .live-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 9px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--lime); margin-left: auto; background: rgba(212,255,61,.12); padding: 3px 8px; border-radius: var(--r-pill); }
+    .live-tag::before { content: ''; display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--lime); }
+
+    .progress-wrap     { padding: 12px 16px; border-bottom: 1px solid var(--black-06); }
+    .progress-bar-bg   { height: 5px; background: var(--black-06); border-radius: var(--r-pill); overflow: hidden; margin-top: 6px; }
+    .progress-bar-fill { height: 100%; background: var(--lime); border-radius: var(--r-pill); transition: width .6s var(--ease); }
+    .progress-label    { font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--black-30); display: flex; justify-content: space-between; }
+
+    .fin-item  { padding: 9px 16px; border-bottom: 1px solid var(--black-06); display: flex; align-items: center; gap: 10px; }
+    .fin-item:last-child { border-bottom: none; }
+    .fin-valor { font-weight: 700; font-size: 13px; margin-left: auto; white-space: nowrap; }
+    .fin-desc  { flex: 1; font-size: 13px; color: var(--black); }
+    .fin-cat   { font-size: 9px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--black-30); margin-top: 2px; }
+
+    /* ── Utils ── */
+    .hidden { display: none !important; }
+    input[type=file] { display: none; }
+    .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.5); border-top-color: #fff; border-radius: 50%; animation: spin .6s linear infinite; vertical-align: middle; margin-right: 4px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
 
-<!-- ══ AUTH SCREEN ══════════════════════════════════════════ -->
+<!-- ══ AUTH ══════════════════════════════════════════════════ -->
 <div id="auth-screen">
-  <div class="auth-card">
-    <div class="logo-big">A</div>
-    <h1>Amanda</h1>
-    <p>Sua assistente pessoal. Entre com seu e-mail para começar.</p>
-    <input type="email" id="email-input" placeholder="seu@email.com" autocomplete="email" />
-    <button class="btn btn-primary" id="send-link-btn" style="width:100%;">Enviar link de acesso</button>
+  <div class="auth-stamp">A</div>
+  <div class="auth-title">Amanda</div>
+  <div class="auth-sub">Assistente da Verô</div>
+  <div class="auth-box">
+    <div class="auth-label">Seu e-mail</div>
+    <input class="auth-input" type="email" id="auth-email" placeholder="veetty@gmail.com" autocomplete="email" inputmode="email" />
+    <button class="auth-btn" id="auth-btn">Enviar link de acesso</button>
     <div class="auth-msg" id="auth-msg"></div>
   </div>
 </div>
 
-<!-- ══ APP ══════════════════════════════════════════════════ -->
-<div id="app" class="hidden">
+<!-- ══ APP ═══════════════════════════════════════════════════ -->
+<div id="app">
 
   <!-- Header -->
   <div class="app-header">
-    <div class="header-logo">A</div>
+    <div class="header-stamp">A</div>
     <div>
-      <div class="header-title">Amanda</div>
-      <div class="header-sub" id="user-email-display"></div>
+      <div class="header-label">Amanda</div>
+      <div class="header-sub" id="header-sub">Carregando…</div>
     </div>
-    <div class="header-right">
-      <button class="icon-btn" id="logout-btn" title="Sair" aria-label="Sair">↪</button>
-    </div>
+    <div class="header-date" id="header-date"></div>
+    <button class="reload-btn" id="reload-btn" title="Atualizar">↻</button>
+    <button class="logout-btn" id="logout-btn">Sair</button>
   </div>
 
-  <!-- Tabs -->
-  <div class="tabs">
-    <button class="tab-btn active" data-tab="chat">💬 Chat</button>
-    <button class="tab-btn" data-tab="historico">📋 Histórico</button>
-  </div>
+  <!-- Body -->
+  <div class="app-body">
 
-  <!-- Setup notice (hidden until Edge Function not configured) -->
-  <div class="setup-notice" id="setup-notice">
-    ⚙️ <strong>Edge Function não configurada.</strong>
-    O chat em tempo real precisa da Edge Function no Supabase.
-    Veja o arquivo <strong>SETUP-CHAT.md</strong> na pasta Amanda Assistente para configurar.
-    Até lá, use a aba Histórico para ver registros anteriores.
-  </div>
-
-  <!-- ── CHAT VIEW ──────────────────────────────────────── -->
-  <div class="view active" id="view-chat">
-    <div class="chat-messages" id="chat-messages">
-      <!-- Messages injected here -->
-    </div>
-    <div class="img-preview-bar" id="img-preview-bar"></div>
-    <div class="input-bar">
-      <div class="input-actions">
-        <label class="icon-btn" for="img-input" title="Foto/Arquivo" style="cursor:pointer;">📎</label>
-        <input type="file" id="img-input" accept="image/*,application/pdf" multiple />
+    <!-- ── CHAT VIEW ──────────────────────────────────── -->
+    <div class="main-view active" id="view-chat">
+      <div class="setup-notice" id="setup-notice">
+        ⚙️ <strong>Edge Function não configurada.</strong>
+        O chat precisa da Edge Function no Supabase. Veja <strong>SETUP-CHAT.md</strong>.
       </div>
-      <div class="input-wrap">
-        <textarea id="chat-input" placeholder="Fala pra Amanda..." rows="1"></textarea>
-      </div>
-      <button class="send-btn" id="send-btn" title="Enviar" disabled>➤</button>
-    </div>
-  </div>
-
-  <!-- ── HISTÓRICO VIEW ─────────────────────────────────── -->
-  <div class="view" id="view-historico">
-    <div class="historico-list" id="historico-list">
-      <div class="empty-state">
-        <div class="icon">📋</div>
-        Carregando histórico...
+      <div class="chat-messages" id="chat-messages"></div>
+      <div class="img-preview-bar" id="img-preview-bar"></div>
+      <div class="input-bar">
+        <div class="input-actions">
+          <label class="icon-btn" for="img-input" title="Foto/Arquivo" style="cursor:pointer;">📎</label>
+          <input type="file" id="img-input" accept="image/*,application/pdf" multiple />
+        </div>
+        <div class="input-wrap">
+          <textarea id="chat-input" placeholder="Fala pra Amanda…" rows="1"></textarea>
+        </div>
+        <button class="send-btn" id="send-btn" title="Enviar" disabled>➤</button>
       </div>
     </div>
+
+    <!-- ── HISTÓRICO VIEW ─────────────────────────────── -->
+    <div class="main-view" id="view-historico">
+      <div class="historico-list" id="historico-list">
+        <div class="empty-state"><div class="icon">📋</div>Carregando histórico…</div>
+      </div>
+    </div>
+
+    <!-- ── PAINEL VIEW ────────────────────────────────── -->
+    <div class="main-view" id="view-painel">
+      <!-- Sub-tabs -->
+      <div class="painel-tabs-wrap">
+        <div class="painel-tabs">
+          <div class="ptab active" data-ptab="alertas">Alertas <span class="ptab-badge urgent" id="badge-alertas">…</span></div>
+          <div class="ptab" data-ptab="lorenzo">Lorenzo</div>
+          <div class="ptab" data-ptab="leonardo">Leonardo</div>
+          <div class="ptab" data-ptab="gael">Gael</div>
+          <div class="ptab" data-ptab="alberto">Alberto</div>
+          <div class="ptab" data-ptab="casa">Casa <span class="ptab-badge" id="badge-casa">…</span></div>
+          <div class="ptab" data-ptab="financeiro">Financeiro <span class="ptab-badge" id="badge-fin">…</span></div>
+          <div class="ptab" data-ptab="compras">Compras</div>
+          <div class="ptab" data-ptab="pendencias">Pendências</div>
+          <div class="ptab" data-ptab="wishlist">Wishlist</div>
+        </div>
+      </div>
+      <!-- Sub-panels -->
+      <div class="painel-panels">
+
+        <!-- ALERTAS -->
+        <div class="ppanel active" id="ppanel-alertas">
+          <div class="hero-band">
+            <div class="hero-band-num" id="hero-num">…</div>
+            <div class="hero-band-text">
+              <div class="title">Alertas ativos hoje</div>
+              <div class="sub" id="hero-sub">carregando…</div>
+            </div>
+          </div>
+          <div class="alert-card critical">
+            <span class="alert-level critical">Crítico</span>
+            <div class="alert-content">
+              <div class="alert-title">Figurinos Festa Junina — pendente para os 4</div>
+              <div class="alert-desc">Separar: base branca + chapéu de palha + lenço azul + fitas.</div>
+            </div>
+          </div>
+          <div class="alert-card critical">
+            <span class="alert-level critical">Crítico</span>
+            <div class="alert-content">
+              <div class="alert-title">OBAFOG Lorenzo — inscrição atrasada</div>
+              <div class="alert-desc">Prazo original foi 10/04. Ligar na escola pra confirmar se ainda aceita.</div>
+            </div>
+          </div>
+          <div class="alert-card warn">
+            <span class="alert-level warn">Atenção</span>
+            <div class="alert-content">
+              <div class="alert-title">Ingressos Festa Junina Ecologia</div>
+              <div class="alert-desc">Vendas abertas desde 22/04. Comprar na secretaria — R$ 40/cada.</div>
+            </div>
+          </div>
+          <div class="alert-card info">
+            <span class="alert-level info">Info</span>
+            <div class="alert-content">
+              <div class="alert-title">Livro "A Tribo Panapá" — Leonardo</div>
+              <div class="alert-desc">Estoque limitado na secretaria do Ecologia. Garantir logo.</div>
+            </div>
+          </div>
+          <div id="alertas-reforma"></div>
+          <div id="alertas-fin"></div>
+          <div class="alert-card ok">
+            <span class="alert-level ok">Resolvido</span>
+            <div class="alert-content">
+              <div class="alert-title">Endocrinopediatra Leonardo — agendado</div>
+              <div class="alert-desc">Dr. Gustavo Lahan — 25/06/2026 às 11h. Confirmado.</div>
+            </div>
+          </div>
+          <div class="alert-card ok">
+            <span class="alert-level ok">Resolvido</span>
+            <div class="alert-content">
+              <div class="alert-title">Unimed R$ 1.240 — paga</div>
+              <div class="alert-desc">Confirmado no Supabase — status: pago.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LORENZO -->
+        <div class="ppanel" id="ppanel-lorenzo">
+          <div class="profile-card">
+            <div class="profile-initial" style="background:var(--pink);color:var(--off-white)">L</div>
+            <div class="profile-info">
+              <div class="name">Lorenzo</div>
+              <div class="age">12 anos · nasceu 29/03/2014</div>
+              <div class="next">Próximo aniversário — 29/03/2027</div>
+            </div>
+          </div>
+          <div class="section">
+            <div class="section-header"><span class="capsule">Escola</span></div>
+            <div class="item"><div class="item-marker solid"></div><div class="item-text">Colégio Ecologia — Unidade Fundamental Maior <span class="item-tag">separado dos irmãos</span></div></div>
+            <div class="item"><div class="item-marker"></div><div class="item-text">Comunicados via ClassApp — sem integração direta</div></div>
+          </div>
+          <div class="section">
+            <div class="section-header"><span class="capsule is-pink">Pendências <span class="dot">·</span> Ativas</span></div>
+            <div class="item"><div class="item-marker urgent"></div><div class="item-text"><strong>Figurinos Festa Junina</strong> — base branca + chapéu + lenço + fitas</div><div class="item-date urgent">urgente</div></div>
+            <div class="item"><div class="item-marker warn"></div><div class="item-text"><strong>OBAFOG 06/05</strong> — perguntar se quer ir + confirmar custo transporte</div><div class="item-date warn">essa semana</div></div>
+            <div class="item"><div class="item-marker warn"></div><div class="item-text"><strong>Ingressos Festa Junina</strong> — comprar na secretaria R$ 40/cada</div><div class="item-date warn">essa semana</div></div>
+            <div class="item"><div class="item-marker"></div><div class="item-text"><strong>Marcar oftalmo</strong> — retorno acompanhamento uso de óculos</div><div class="item-date">em aberto</div></div>
+            <div class="item"><div class="item-marker"></div><div class="item-text"><strong>Cancelar Totalpass</strong> do Lorenzo</div><div class="item-date">em aberto</div></div>
+            <div class="item"><div class="item-marker"></div><div class="item-text"><strong>Comprar livro</strong> "A Turma da Rua Quinze"</div><div class="item-date">em aberto</div></div>
+          </div>
+          <div class="section">
+            <div class="section-header"><span class="capsule">Saúde</span></div>
+            <div class="item"><div class="item-marker warn"></div><div class="item-text"><strong>Exame de sangue</strong> — guia desde nov/2025. Agendar laboratório Unimed.</div></div>
+            <div class="item"><div class="item-marker"></div><div class="item-text">Sem terapia ou médico recorrente no momento</div></div>
+          </div>
+          <div class="section">
+            <div class="section-header"><span class="capsule">Próximos eventos</span></div>
+            <div class="item"><div class="item-marker solid"></div><div class="item-text"><strong>OBAFOG</strong> — 06/05/2026 (aguardando confirmação)</div></div>
+          </div>
+        </div>
+
+        <!-- LEONARDO -->
+        <div class="ppanel" id="ppanel-leonardo">
+          <div class="profile-card">
+            <div class="profile-initial" style="background:var(--lime);color:var(--black)">L</div>
+            <div class="profile-info">
+              <div class="name">Leonardo</div>
+              <div class="age">9 anos · faz 10 em 12/08/2026</div>
+              <div class="next" id="leo-bday"></div>
+            </div>
+          </div>
+          <div class="section">
+            <div class="section-header"><span class="capsule">Escola</span></div>
+            <div class="item"><div class="item-marker solid"></div><div class="item-text">Colégio Ecologia — Unidade Menores</div></div>
+          </div>
+          <div class="section">
+            <div class="section-header"><span class="capsule is-pink">Pendências <span class="dot">·</span> Ativas</span></div>
+            <div class="item"><div class="item-marker urgent"></div><div class="item-text"><strong>Figurinos Festa Junina</strong> — base branca + chapéu + lenço + fitas</div><div class="item-date urgent">urgente</div></div>
+            <div class="item"><div class="item-marker warn"></div><div class="item-text"><strong>Enviar atestado dentista no ClassApp</strong> — perdeu prova</div><div class="item-date warn">essa semana</div></div>
+            <div class="item"><div class="item-marker warn"></div><div class="item-text"><strong>Ingressos Festa Junina</strong> — comprar na secretaria R$ 40/cada</div><div class="item-date warn">essa semana</div></div>
+            <div class="item"><div class="item-marker"></div><div class="item-text"><strong>Artsmile</strong> — verificar plano de aparelho</div><div class="item-date">em aberto</div></div>
+          </div>
+          <div class="section">
+            <div class="section-header"><span class="capsule">Saúde</span></div>
+            <div class="item"><div class="item-marker ok"></div><div class="item-text"><strong>Endocrinopediatra</strong> — Dr. Gustavo Lahan — 25/06/2026 às 11h</div></div>
+            <div class="item"><div class="item-marker warn"></div><div class="item-text"><strong>Exame de sangue</strong> — guia desde nov/2025. Agendar Unimed.</div></div>
+            <div class="item"><div class="item-marker"></div><div class="item-text"><strong>Terapia</strong> — dia, horário e profissional a preencher</div></div>
+          </div>
+          <div class="section">
+            <div class="section-header"><span class="capsule">Materiais</span></div>
+            <div class="item"><div class="item-marker warn"></div><div class="item-text">Livro "A Tribo Panapá" — secretaria do Ecologia (estoque limitado)</div></div>
+          </div>
+        </div>
+
+        <!-- GAEL -->
+        <div class="ppanel" id="ppanel-gael">
+          <div class="profile-card">
+            <div class="profile-initial" style="background:rgba(255,252,244,.12);color:var(--off-white)">G</div>
+            <div class="profile-info">
+              <div class="name">Gael</div>
+              <div class="age">5 anos · faz 6 em 04/08/2026</div>
+              <div class="next" id="gael-bday"></div>
+            </div>
+          </div>
+          <div class="section">
+            <div class="section-header"><span class="capsule">Escola</span></div>
+            <div class="item"><div class="item-marker solid"></div><div class="item-text">Colégio Ecologia — Unidade Menores</div></div>
+          </div>
+          <div class="section">
+            <div class="section-header"><span class="capsule is-pink">Pendências <span class="dot">·</span> Ativas</span></div>
+            <div class="item"><div class="item-marker urgent"></div><div class="item-text"><strong>Figurinos Festa Junina</strong> — base branca + chapéu + lenço + fitas</div><div class="item-date urgent">urgente</div></div>
+            <div class="item"><div class="item-marker warn"></div><div class="item-text"><strong>Ingressos Festa Junina</strong> — comprar na secretaria R$ 40/cada</div><div class="item-date warn">essa semana</div></div>
+          </div>
+          <div class="section">
+            <div class="section-header"><span class="capsule">Saúde</span></div>
+            <div class="item"><div class="item-marker warn"></div><div class="item-text"><strong>Vacinas pendentes</strong> — conferir caderneta</div></div>
+            <div class="item"><div class="item-marker warn"></div><div class="item-text"><strong>Exame de sangue</strong> — guia desde nov/2025. Agendar Unimed.</div></div>
+            <div class="item"><div class="item-marker ok"></div><div class="item-text">Sem terapia no momento</div></div>
+          </div>
+        </div>
+
+        <!-- ALBERTO -->
+        <div class="ppanel" id="ppanel-alberto">
+          <div class="profile-card">
+            <div class="profile-initial" style="background:rgba(212,255,61,.18);color:var(--lime)">A</div>
+            <div class="profile-info">
+              <div class="name">Alberto</div>
+              <div class="age">3 anos · faz 4 em 13/10/2026</div>
+              <div class="next" id="alberto-bday"></div>
+            </div>
+          </div>
+          <div class="section">
+            <div class="section-header"><span class="capsule">Escola</span></div>
+            <div class="item"><div class="item-marker solid"></div><div class="item-text">Colégio Ecologia — Unidade Menores</div></div>
+          </div>
+          <div class="section">
+            <div class="section-header"><span class="capsule is-pink">Pendências <span class="dot">·</span> Ativas</span></div>
+            <div class="item"><div class="item-marker urgent"></div><div class="item-text"><strong>Figurinos Festa Junina</strong> — base branca + chapéu + lenço + fitas</div><div class="item-date urgent">urgente</div></div>
+            <div class="item"><div class="item-marker warn"></div><div class="item-text"><strong>Ingressos Festa Junina</strong> — comprar na secretaria R$ 40/cada</div><div class="item-date warn">essa semana</div></div>
+          </div>
+          <div class="section">
+            <div class="section-header"><span class="capsule">Saúde</span></div>
+            <div class="item"><div class="item-marker warn"></div><div class="item-text"><strong>Exame de sangue</strong> — guia desde nov/2025. Agendar Unimed.</div></div>
+            <div class="item"><div class="item-marker ok"></div><div class="item-text">Sem terapia no momento</div></div>
+            <div class="item"><div class="item-marker"></div><div class="item-text"><strong>Lembrete GCal</strong> — marcar pediatra anual (20/10/2026)</div></div>
+          </div>
+        </div>
+
+        <!-- CASA -->
+        <div class="ppanel" id="ppanel-casa">
+          <div class="section" id="reforma-section">
+            <div class="section-header">
+              <span class="capsule is-pink">Reforma</span>
+              <span class="live-tag">ao vivo</span>
+            </div>
+            <div class="loading" id="reforma-loading">Buscando dados…</div>
+            <div id="reforma-content" style="display:none"></div>
+          </div>
+          <div class="section">
+            <div class="section-header"><span class="capsule">Pendências Casa</span></div>
+            <div class="item"><div class="item-marker"></div><div class="item-text"><strong>Verificar mudança TP4 → TP2</strong></div></div>
+            <div class="item"><div class="item-marker warn"></div><div class="item-text"><strong>Acompanhar sinistro Spin</strong> — cobrar se parado</div></div>
+          </div>
+        </div>
+
+        <!-- FINANCEIRO -->
+        <div class="ppanel" id="ppanel-financeiro">
+          <div class="section" id="fin-section">
+            <div class="section-header">
+              <span class="capsule">Mês atual</span>
+              <span class="live-tag">ao vivo</span>
+            </div>
+            <div class="loading" id="fin-loading">Buscando dados…</div>
+            <div id="fin-content" style="display:none"></div>
+          </div>
+          <div class="section" id="fin-prox-section" style="display:none">
+            <div class="section-header">
+              <span class="capsule is-ghost">Próximo mês <span class="dot">·</span> Pendentes</span>
+            </div>
+            <div id="fin-prox-content"></div>
+          </div>
+        </div>
+
+        <!-- COMPRAS -->
+        <div class="ppanel" id="ppanel-compras">
+          <div class="section">
+            <div class="section-header"><span class="capsule">Mercado <span class="dot">·</span> Essa semana</span></div>
+            <div class="subheader">Hortifrúti</div>
+            <div class="item"><div class="item-marker warn"></div><div class="item-text">Alface · Brócolis · Abobrinha · Tomate · Cebola · Alho · Limão</div></div>
+            <div class="item"><div class="item-marker warn"></div><div class="item-text">Melancia · Banana · Maçã · Morango · Manga · Batata</div></div>
+            <div class="subheader">Mercearia</div>
+            <div class="item"><div class="item-marker warn"></div><div class="item-text">Ovos · Feijão · Macarrão espaguete · Parafuso</div></div>
+            <div class="item"><div class="item-marker warn"></div><div class="item-text">Arroz · Açúcar · Molho de tomate · Ketchup · Mostarda · Maionese</div></div>
+            <div class="item"><div class="item-marker warn"></div><div class="item-text">Queijo · Presunto · Café</div></div>
+            <div class="subheader">Higiene</div>
+            <div class="item"><div class="item-marker warn"></div><div class="item-text">Sabonete líquido corporal · Shampoo · Papel higiênico · Papel toalha</div></div>
+          </div>
+          <div class="section">
+            <div class="section-header"><span class="capsule">Carnes <span class="dot">·</span> Proteínas</span></div>
+            <div class="item"><div class="item-marker solid"></div><div class="item-text">Contrafilé — 3kg · Frango (sassami, ostrinha, peito) · Linguiça — 2 pct · Carne moída</div></div>
+          </div>
+          <div class="section">
+            <div class="section-header"><span class="capsule">Laticínios <span class="dot">·</span> Padaria</span></div>
+            <div class="item"><div class="item-marker solid"></div><div class="item-text">Leite — 5 caixas · Iogurte · Leite condensado — 2cx · Pão hambúrguer — 12un</div></div>
+            <div class="item"><div class="item-marker solid"></div><div class="item-text">Nescau · Chocolate 50% · Cereal matinal · Coca-Cola 1L</div></div>
+          </div>
+          <div class="section">
+            <div class="section-header"><span class="capsule">Escola <span class="dot">·</span> Lanche</span></div>
+            <div class="item"><div class="item-marker"></div><div class="item-text">Bisnaguinha · Queijo muçarela fatiado · Presunto · Requeijão</div></div>
+            <div class="item"><div class="item-marker"></div><div class="item-text">Iogurte pack · Suco caixinha · Achocolatado · Biscoito · Bolacha · Pão de queijo · Barra cereal</div></div>
+          </div>
+          <div class="section">
+            <div class="section-header"><span class="capsule">Beleza <span class="dot">·</span> Farmácia</span></div>
+            <div class="item"><div class="item-marker"></div><div class="item-text"><strong>Granado Cera Nutritiva Pink 7g</strong> — R$ 25,56 — já no carrinho Amazon</div></div>
+            <div class="item"><div class="item-marker"></div><div class="item-text">Pasta de dente · Shampoo anticaspa</div></div>
+          </div>
+        </div>
+
+        <!-- PENDÊNCIAS -->
+        <div class="ppanel" id="ppanel-pendencias">
+          <div class="section">
+            <div class="section-header"><span class="capsule is-pink">Vence hoje <span class="dot">·</span> amanhã</span><span class="section-count">1 item</span></div>
+            <div class="item"><div class="item-marker urgent"></div><div class="item-text"><strong>Separar figurinos Festa Junina</strong> — base branca + chapéu palha + lenço azul + fitas — para os 4<span class="item-tag">escola</span><span class="item-tag">casa</span></div></div>
+          </div>
+          <div class="section">
+            <div class="section-header"><span class="capsule">Essa semana</span><span class="section-count">4 itens</span></div>
+            <div class="item"><div class="item-marker warn"></div><div class="item-text"><strong>Perguntar ao Lorenzo sobre OBAFOG</strong> (06/05) + confirmar custo transporte<span class="item-tag">escola</span></div></div>
+            <div class="item"><div class="item-marker warn"></div><div class="item-text"><strong>Enviar atestado dentista Leonardo no ClassApp</strong><span class="item-tag">escola</span><span class="item-tag">saúde</span></div></div>
+            <div class="item"><div class="item-marker warn"></div><div class="item-text"><strong>Comprar ingressos Festa Junina</strong> na secretaria — R$ 40 cada<span class="item-tag">escola</span></div></div>
+            <div class="item"><div class="item-marker warn"></div><div class="item-text"><strong>Levar 4 crianças pro exame de sangue</strong> — agendar lab Unimed<span class="item-tag">saúde</span></div></div>
+          </div>
+          <div class="section">
+            <div class="section-header"><span class="capsule">Em aberto</span></div>
+            <div class="item"><div class="item-marker"></div><div class="item-text">Comprar livro "A turma da rua Quinze" pra Lorenzo<span class="item-tag">criança</span></div></div>
+            <div class="item"><div class="item-marker"></div><div class="item-text">Contratar depilação a laser — Espaço Laser<span class="item-tag">pessoal</span></div></div>
+            <div class="item"><div class="item-marker"></div><div class="item-text">Verificar mudança TP4 → TP2<span class="item-tag">casa</span></div></div>
+            <div class="item"><div class="item-marker"></div><div class="item-text">Cancelar Totalpass do Lorenzo<span class="item-tag">pessoal</span></div></div>
+            <div class="item"><div class="item-marker"></div><div class="item-text">Fazer sobrancelha e levar cartão fidelidade<span class="item-tag">pessoal</span></div></div>
+            <div class="item"><div class="item-marker"></div><div class="item-text">Marcar massagem Face Ativa<span class="item-tag">pessoal</span></div></div>
+            <div class="item"><div class="item-marker"></div><div class="item-text">Marcar drenagem (Buddha Spa?)<span class="item-tag">pessoal</span></div></div>
+            <div class="item"><div class="item-marker"></div><div class="item-text">Levar Gael pra vacinar — conferir caderneta<span class="item-tag">saúde</span></div></div>
+            <div class="item"><div class="item-marker"></div><div class="item-text">Acompanhar sinistro do carro (Spin)<span class="item-tag">casa</span></div></div>
+            <div class="item"><div class="item-marker"></div><div class="item-text">Marcar oftalmo Lorenzo — retorno óculos<span class="item-tag">saúde</span></div></div>
+            <div class="item"><div class="item-marker"></div><div class="item-text">Artsmile — verificar plano de aparelho do Leo<span class="item-tag">saúde</span></div></div>
+          </div>
+          <div class="section">
+            <div class="section-header"><span class="capsule is-lime">Feito <span class="dot" style="color:var(--black)">·</span> Últimos 7 dias</span></div>
+            <div class="item"><div class="item-marker ok"></div><div class="item-text done">Marcar consulta endocrinopediatra Leo — 17/04</div></div>
+            <div class="item"><div class="item-marker ok"></div><div class="item-text done">Lembrar Lorenzo de revisar SAE Livro 1 — 22/04</div></div>
+            <div class="item"><div class="item-marker ok"></div><div class="item-text done">Unimed R$ 1.240 — paga</div></div>
+          </div>
+        </div>
+
+        <!-- WISHLIST -->
+        <div class="ppanel" id="ppanel-wishlist">
+          <div class="section">
+            <div class="section-header"><span class="capsule">Roupas <span class="dot">·</span> Calçados</span></div>
+            <div class="item"><div class="item-marker solid"></div><div class="item-text"><strong>Tênis da Feet of Tomorrow</strong></div><div class="item-date">adic. 12/04</div></div>
+          </div>
+          <div class="section">
+            <div class="section-header"><span class="capsule">Beleza <span class="dot">·</span> Cuidados</span></div>
+            <div class="item">
+              <div class="item-marker"></div>
+              <div class="item-text">
+                <strong>Creme hidratante unhas e cutículas</strong><br>
+                <span style="font-size:12px;color:var(--black-60);font-family:'EB Garamond',serif;font-style:italic">1º Granado Cera Nutritiva Pink 7g — R$ 26–29</span><br>
+                <span style="font-size:12px;color:var(--black-60);font-family:'EB Garamond',serif;font-style:italic">2º Granado Creme Cutículas Pink 100g</span><br>
+                <span style="font-size:12px;color:var(--black-60);font-family:'EB Garamond',serif;font-style:italic">3º Bepantol Derma 20g — R$ 19–30</span>
+              </div>
+              <div class="item-date">adic. 10/04</div>
+            </div>
+          </div>
+          <div class="section">
+            <div class="section-header"><span class="capsule">Experiências</span></div>
+            <div class="item"><div class="item-marker"></div><div class="item-text"><strong>Massagem Face Ativa</strong> — marcar quando der</div></div>
+            <div class="item"><div class="item-marker"></div><div class="item-text"><strong>Drenagem</strong> — Buddha Spa ou similar</div></div>
+          </div>
+        </div>
+
+      </div><!-- /painel-panels -->
+    </div><!-- /view-painel -->
+
+  </div><!-- /app-body -->
+
+  <!-- Bottom Nav -->
+  <div class="bottom-nav">
+    <button class="nav-btn active" data-view="chat">
+      <div class="nav-btn-inner">
+        <div class="nav-icon">💬</div>
+      </div>
+      <span>Chat</span>
+    </button>
+    <button class="nav-btn" data-view="historico">
+      <div class="nav-btn-inner">
+        <div class="nav-icon">📋</div>
+      </div>
+      <span>Histórico</span>
+    </button>
+    <button class="nav-btn" data-view="painel">
+      <div class="nav-btn-inner">
+        <div class="nav-icon">🏠</div>
+        <div class="nav-badge" id="nav-badge-painel"></div>
+      </div>
+      <span>Painel</span>
+    </button>
   </div>
 
 </div><!-- /app -->
 
 <script type="module">
-  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-  // ── CONFIG ────────────────────────────────────────────────
-  const SUPABASE_URL  = 'https://qwlegnebejakwwuntyrd.supabase.co';
-  const SUPABASE_KEY  = 'sb_publishable_q_ACTFhH48bhOGAmbVP73g_RSlgs69W';
-  const EDGE_FN_URL   = `${SUPABASE_URL}/functions/v1/amanda-chat`;
-  const BUCKET        = 'amanda-uploads';
-  const MAX_HISTORY   = 20; // messages to keep in memory for context
+// ── CONFIG ────────────────────────────────────────────────────
+const SUPABASE_URL  = 'https://qwlegnebejakwwuntyrd.supabase.co';
+const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF3bGVnbmViZWpha3d3dW50eXJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2OTUxODYsImV4cCI6MjA5MTI3MTE4Nn0.lkYjF5xXwS_XW8Wi-p0YBBOxY7Bjs_HDw7PIWDTcPYQ';
+const EDGE_FN_URL   = `${SUPABASE_URL}/functions/v1/amanda-chat`;
+const BUCKET        = 'amanda-uploads';
+const MAX_HISTORY   = 20;
+const REDIRECT_URL  = 'https://helloveronicaponce.github.io/amanda/';
 
-  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
-    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+});
+
+// ── DOM ───────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const authScreen   = $('auth-screen');
+const app          = $('app');
+const authEmail    = $('auth-email');
+const authBtn      = $('auth-btn');
+const authMsgEl    = $('auth-msg');
+const logoutBtn    = $('logout-btn');
+const reloadBtn    = $('reload-btn');
+const chatMessages = $('chat-messages');
+const chatInput    = $('chat-input');
+const sendBtn      = $('send-btn');
+const imgInput     = $('img-input');
+const imgPreviewBar= $('img-preview-bar');
+const setupNotice  = $('setup-notice');
+const historicoList= $('historico-list');
+
+// ── STATE ─────────────────────────────────────────────────────
+let currentUser      = null;
+let conversationHist = [];
+let pendingFiles     = [];
+let isStreaming      = false;
+let edgeFnAvailable  = true;
+let painelLoaded     = false;
+
+// ── UTILS ─────────────────────────────────────────────────────
+const esc  = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const brl  = v => 'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtFull  = iso => new Date(iso).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+const fmtShort = iso => new Date(iso).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+
+function showAuthMsg(text, kind) {
+  authMsgEl.textContent = text;
+  authMsgEl.className   = 'auth-msg ' + kind;
+}
+
+// ── AUTH ──────────────────────────────────────────────────────
+async function checkSession() {
+  // Tentar trocar código (magic link return)
+  const search = window.location.search;
+  if (search.includes('code=') || search.includes('access_token')) {
+    const { data } = await sb.auth.exchangeCodeForSession(search);
+    if (data?.session) {
+      window.history.replaceState({}, document.title, window.location.pathname);
+      return bootApp(data.session.user);
+    }
+  }
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) bootApp(session.user);
+  else showAuth();
+}
+
+function showAuth() {
+  authScreen.style.display = 'flex';
+  app.classList.remove('active');
+}
+
+function bootApp(user) {
+  currentUser = user;
+  authScreen.style.display = 'none';
+  app.classList.add('active');
+
+  // Header date
+  const now = new Date();
+  const dayName = now.toLocaleDateString('pt-BR',{weekday:'short'}).toUpperCase();
+  $('header-sub').textContent = user.email;
+  $('header-date').innerHTML =
+    `<span class="sync-dot"></span>${dayName} ${now.getDate()} ${now.toLocaleDateString('pt-BR',{month:'short'}).toUpperCase()}<br><span style="font-size:8px;letter-spacing:.04em;opacity:.4">SUPABASE LIVE</span>`;
+
+  // Aniversários
+  function daysUntil(m,d){
+    const y=now.getFullYear(); let next=new Date(y,m-1,d);
+    if(next<=now) next=new Date(y+1,m-1,d);
+    return Math.ceil((next-now)/86400000);
+  }
+  [{id:'leo-bday',m:8,d:12},{id:'gael-bday',m:8,d:4},{id:'alberto-bday',m:10,d:13}]
+    .forEach(({id,m,d})=>{ const el=$(id); if(el) el.textContent=`Aniversário daqui a ${daysUntil(m,d)} dias`; });
+
+  sendBtn.disabled = false;
+  loadRecentChatHistory();
+  subscribeToConversations();
+  chatInput.focus();
+}
+
+authBtn.addEventListener('click', async () => {
+  const email = authEmail.value.trim();
+  if (!email) { showAuthMsg('Digita o e-mail primeiro.', 'err'); return; }
+  authBtn.disabled = true;
+  authBtn.innerHTML = '<span class="spinner"></span>Enviando…';
+  const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: REDIRECT_URL } });
+  authBtn.disabled = false;
+  authBtn.textContent = 'Enviar link de acesso';
+  if (error) showAuthMsg('Erro ao enviar o link. Tenta de novo.', 'err');
+  else showAuthMsg('Link enviado! Abre o e-mail e clica no link.', 'ok');
+});
+authEmail.addEventListener('keydown', e => { if (e.key==='Enter') authBtn.click(); });
+
+logoutBtn.addEventListener('click', async () => {
+  if (confirm('Sair da conta?')) { await sb.auth.signOut(); location.reload(); }
+});
+
+sb.auth.onAuthStateChange((event, session) => {
+  if (event==='SIGNED_IN' && session && !currentUser) bootApp(session.user);
+  if (event==='SIGNED_OUT') { currentUser=null; showAuth(); }
+});
+
+// ── BOTTOM NAV ────────────────────────────────────────────────
+document.querySelectorAll('.nav-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const view = btn.dataset.view;
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.main-view').forEach(v => v.classList.remove('active'));
+    $('view-' + view).classList.add('active');
+    if (view === 'historico') loadHistorico();
+    if (view === 'painel' && !painelLoaded) { painelLoaded=true; reloadPainel(); }
   });
+});
 
-  // ── DOM REFS ──────────────────────────────────────────────
-  const $ = id => document.getElementById(id);
-  const authScreen      = $('auth-screen');
-  const app             = $('app');
-  const emailInput      = $('email-input');
-  const sendLinkBtn     = $('send-link-btn');
-  const authMsg         = $('auth-msg');
-  const userEmailDisplay= $('user-email-display');
-  const logoutBtn       = $('logout-btn');
-  const chatMessages    = $('chat-messages');
-  const chatInput       = $('chat-input');
-  const sendBtn         = $('send-btn');
-  const imgInput        = $('img-input');
-  const imgPreviewBar   = $('img-preview-bar');
-  const setupNotice     = $('setup-notice');
-  const historicoList   = $('historico-list');
+reloadBtn.addEventListener('click', () => {
+  painelLoaded = false;
+  reloadPainel();
+  painelLoaded = true;
+});
 
-  // ── STATE ─────────────────────────────────────────────────
-  let currentUser       = null;
-  let conversationHist  = []; // [{role, content}] for API context
-  let pendingFiles      = [];
-  let isStreaming       = false;
-  let edgeFnAvailable   = true;
+// ── PAINEL SUB-TABS ───────────────────────────────────────────
+document.querySelectorAll('.ptab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    const target = tab.dataset.ptab;
+    document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.ppanel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    $('ppanel-'+target).classList.add('active');
+    tab.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+  });
+});
 
-  // ── UTILS ─────────────────────────────────────────────────
-  function escapeHtml(s) {
-    return String(s).replace(/[&<>"']/g, c =>
-      ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  }
+// ── PAINEL DATA ───────────────────────────────────────────────
+async function sbGet(path, params='') {
+  const { data: { session } } = await sb.auth.getSession();
+  const token = session?.access_token || SUPABASE_KEY;
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}${params}`, {
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
 
-  function formatTime(iso) {
-    const d = new Date(iso);
-    return d.toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
-  }
+async function loadReforma() {
+  try {
+    const rows = await sbGet('reforma_items','?select=comodo_label,descricao,status,prazo&order=ordem_comodo.asc,ordem_item.asc');
+    const grupos = {};
+    rows.forEach(r => { if(!grupos[r.comodo_label]) grupos[r.comodo_label]=[]; grupos[r.comodo_label].push(r); });
+    const total   = rows.length;
+    const done    = rows.filter(r=>r.status==='done').length;
+    const pct     = total ? Math.round(done/total*100) : 0;
+    const pending = rows.filter(r=>r.status==='pending');
 
-  function formatTimeShort(iso) {
-    return new Date(iso).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
-  }
+    $('badge-casa').textContent = pending.length || '✓';
 
-  function showAuthMsg(msg, kind) {
-    authMsg.textContent = msg;
-    authMsg.className = 'auth-msg show ' + (kind || 'info');
-  }
-
-  function scrollToBottom(smooth = true) {
-    chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: smooth ? 'smooth' : 'instant' });
-  }
-
-  // ── AUTH ──────────────────────────────────────────────────
-  async function checkSession() {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) await bootApp(session.user);
-    else showAuthScreen();
-  }
-
-  function showAuthScreen() {
-    authScreen.classList.remove('hidden');
-    app.classList.add('hidden');
-  }
-
-  async function bootApp(user) {
-    currentUser = user;
-    authScreen.classList.add('hidden');
-    app.classList.remove('hidden');
-    userEmailDisplay.textContent = user.email;
-    sendBtn.disabled = false;
-    await loadRecentChatHistory();
-    subscribeToConversations();
-    chatInput.focus();
-  }
-
-  sendLinkBtn.addEventListener('click', async () => {
-    const email = emailInput.value.trim();
-    if (!email) { showAuthMsg('Digite seu e-mail.', 'error'); return; }
-    sendLinkBtn.disabled = true;
-    sendLinkBtn.innerHTML = '<span class="spinner"></span>Enviando...';
-    const { error } = await supabase.auth.signInWithOtp({
-      email, options: { emailRedirectTo: window.location.href }
+    const alertasDiv = $('alertas-reforma');
+    alertasDiv.innerHTML = '';
+    pending.filter(r=>r.prazo).forEach(r=>{
+      alertasDiv.innerHTML += `<div class="alert-card warn"><span class="alert-level warn">Reforma</span><div class="alert-content"><div class="alert-title">${esc(r.comodo_label)} — ${esc(r.descricao)}</div><div class="alert-desc">Prazo: ${esc(r.prazo)} · ainda pendente</div></div></div>`;
     });
-    sendLinkBtn.disabled = false;
-    sendLinkBtn.textContent = 'Enviar link de acesso';
-    if (error) showAuthMsg('Erro: ' + error.message, 'error');
-    else showAuthMsg('✓ Link enviado! Confira seu e-mail.', 'success');
-  });
 
-  logoutBtn.addEventListener('click', async () => {
-    if (confirm('Sair da conta?')) { await supabase.auth.signOut(); location.reload(); }
-  });
-
-  supabase.auth.onAuthStateChange(async (event, session) => {
-    if (event === 'SIGNED_IN' && session) await bootApp(session.user);
-    if (event === 'SIGNED_OUT') showAuthScreen();
-  });
-
-  // ── TABS ──────────────────────────────────────────────────
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const tab = btn.dataset.tab;
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-      $('view-' + tab).classList.add('active');
-      if (tab === 'historico') loadHistorico();
+    let html = `<div class="progress-wrap"><div class="progress-label"><span>${done} de ${total} concluídos</span><span>${pct}%</span></div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${pct}%"></div></div></div>`;
+    Object.entries(grupos).forEach(([label, items]) => {
+      const pItems = items.filter(i=>i.status==='pending');
+      const dItems = items.filter(i=>i.status==='done');
+      html += `<div class="subheader">${esc(label)} — ${dItems.length}/${items.length} ok</div>`;
+      pItems.forEach(i => { html+=`<div class="item"><div class="item-marker warn"></div><div class="item-text">${esc(i.descricao)}</div></div>`; });
+      dItems.forEach(i => { html+=`<div class="item"><div class="item-marker ok"></div><div class="item-text done">${esc(i.descricao)}</div></div>`; });
     });
-  });
 
-  // ── AUTO-RESIZE TEXTAREA ──────────────────────────────────
-  chatInput.addEventListener('input', () => {
-    chatInput.style.height = 'auto';
-    chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + 'px';
-    sendBtn.disabled = isStreaming || (!chatInput.value.trim() && pendingFiles.length === 0);
-  });
+    $('reforma-loading').style.display='none';
+    const c = $('reforma-content');
+    c.innerHTML = html; c.style.display = 'block';
+    updateHero();
+  } catch(e) {
+    $('reforma-loading').textContent = 'Erro ao carregar reforma.';
+  }
+}
 
-  chatInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      if (!sendBtn.disabled) doSend();
-    }
-  });
+async function loadFinanceiro() {
+  try {
+    const now = new Date();
+    const mesAtual = now.toISOString().slice(0,7);
+    const mesProx  = new Date(now.getFullYear(), now.getMonth()+1, 1).toISOString().slice(0,7);
 
-  // ── FILE HANDLING ─────────────────────────────────────────
-  imgInput.addEventListener('change', (e) => {
-    for (const f of e.target.files) pendingFiles.push(f);
-    renderImagePreview();
-    e.target.value = '';
-    sendBtn.disabled = isStreaming || (!chatInput.value.trim() && pendingFiles.length === 0);
-  });
+    const rows = await sbGet('financial_data','?id=eq.1&select=data');
+    const data  = rows[0]?.data || {};
+    const atual   = data[mesAtual] || [];
+    const proximo = data[mesProx]  || [];
 
-  function renderImagePreview() {
-    imgPreviewBar.innerHTML = '';
-    pendingFiles.forEach((f, idx) => {
-      const wrap = document.createElement('div');
-      wrap.className = 'img-thumb';
-      if (f.type.startsWith('image/')) {
-        const img = document.createElement('img');
-        img.src = URL.createObjectURL(f);
-        wrap.appendChild(img);
-      } else {
-        wrap.style.cssText = 'background:#eee;display:grid;place-items:center;font-size:11px;color:#666;';
-        wrap.textContent = 'PDF';
-      }
-      const rm = document.createElement('div');
-      rm.className = 'rm'; rm.textContent = '×';
-      rm.onclick = () => { pendingFiles.splice(idx, 1); renderImagePreview(); };
-      wrap.appendChild(rm);
-      imgPreviewBar.appendChild(wrap);
+    const pendentes = atual.filter(i=>i.status==='pendente'||i.status==='agendado');
+    const pagos     = atual.filter(i=>i.status==='pago');
+    const totalIn   = pagos.filter(i=>i.tipo==='in').reduce((s,i)=>s+Number(i.valor),0);
+    const totalOut  = pagos.filter(i=>i.tipo==='out').reduce((s,i)=>s+Number(i.valor),0);
+    const saldo     = totalIn - totalOut;
+
+    $('badge-fin').textContent = pendentes.length || '✓';
+
+    const alertasFinDiv = $('alertas-fin');
+    alertasFinDiv.innerHTML = '';
+    pendentes.forEach(i => {
+      const venc = i.venc ? new Date(i.venc+'T00:00:00') : null;
+      const dias = venc ? Math.ceil((venc-now)/86400000) : null;
+      const urg  = dias !== null && dias <= 3;
+      alertasFinDiv.innerHTML += `<div class="alert-card ${urg?'critical':'warn'}"><span class="alert-level ${urg?'critical':'warn'}">${urg?'Vence em breve':'Pendente'}</span><div class="alert-content"><div class="alert-title">${esc(i.desc)} — ${brl(i.valor)}</div><div class="alert-desc">Venc. ${esc(i.venc||'—')} · ${esc(i.cat)}${i.obs?' · '+esc(i.obs):''}</div></div></div>`;
     });
-  }
 
-  async function compressImage(file) {
-    if (!file.type.startsWith('image/')) return file;
-    try {
-      const bitmap = await createImageBitmap(file);
-      const maxSide = 1200;
-      let { width, height } = bitmap;
-      if (Math.max(width, height) > maxSide) {
-        const scale = maxSide / Math.max(width, height);
-        width = Math.round(width * scale); height = Math.round(height * scale);
+    let html = `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:12px 16px;border-bottom:1px solid var(--black-06)">
+      <div><div style="font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--black-30);margin-bottom:4px">Receitas</div><div style="font-weight:900;font-size:15px">${brl(totalIn)}</div></div>
+      <div><div style="font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--black-30);margin-bottom:4px">Despesas</div><div style="font-weight:900;font-size:15px">${brl(totalOut)}</div></div>
+      <div><div style="font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--black-30);margin-bottom:4px">Saldo</div><div style="font-weight:900;font-size:15px;color:${saldo>=0?'var(--black)':'var(--pink)'}">${brl(saldo)}</div></div>
+    </div>`;
+    if (pendentes.length>0) {
+      html += `<div class="subheader">Pendentes — ${pendentes.length}</div>`;
+      pendentes.forEach(i => { html+=`<div class="fin-item"><div class="item-marker urgent"></div><div><div class="fin-desc"><strong>${esc(i.desc)}</strong></div><div class="fin-cat">${esc(i.cat)} · venc. ${esc(i.venc||'—')}</div></div><div class="fin-valor">${brl(i.valor)}</div></div>`; });
+    }
+    html += `<div class="subheader">Pagos — ${pagos.length}</div>`;
+    pagos.slice().sort((a,b)=>(b.pag||'').localeCompare(a.pag||'')).forEach(i => {
+      html += `<div class="fin-item"><div class="item-marker ${i.tipo==='in'?'ok':'solid'}"></div><div><div class="fin-desc">${esc(i.desc)}</div><div class="fin-cat">${esc(i.cat)}${i.pag?' · '+esc(i.pag):''}</div></div><div class="fin-valor">${i.tipo==='in'?'+':'−'}${brl(i.valor)}</div></div>`;
+    });
+
+    $('fin-loading').style.display='none';
+    const fc = $('fin-content');
+    fc.innerHTML = html; fc.style.display = 'block';
+
+    if (proximo.length>0) {
+      const pp = proximo.filter(i=>i.status==='pendente'||i.status==='agendado');
+      if (pp.length>0) {
+        let ph = '';
+        pp.forEach(i => { ph+=`<div class="fin-item"><div class="item-marker warn"></div><div><div class="fin-desc">${esc(i.desc)}</div><div class="fin-cat">${esc(i.cat)} · venc. ${esc(i.venc||'—')}</div></div><div class="fin-valor">${brl(i.valor)}</div></div>`; });
+        $('fin-prox-content').innerHTML = ph;
+        $('fin-prox-section').style.display = 'block';
       }
-      const canvas = new OffscreenCanvas(width, height);
-      canvas.getContext('2d').drawImage(bitmap, 0, 0, width, height);
-      const blob = await canvas.convertToBlob({ type: 'image/jpeg', quality: 0.80 });
-      return new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' });
-    } catch { return file; }
-  }
-
-  async function uploadFiles() {
-    const paths = [];
-    for (const f of pendingFiles) {
-      const compressed = await compressImage(f);
-      const ext = compressed.name.split('.').pop().toLowerCase();
-      const path = `${currentUser.id}/${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
-      const { error } = await supabase.storage.from(BUCKET).upload(path, compressed, {
-        contentType: compressed.type, upsert: false
-      });
-      if (!error) paths.push({ path, type: compressed.type, name: f.name });
     }
-    return paths;
+    updateHero();
+  } catch(e) {
+    $('fin-loading').textContent = 'Erro ao carregar financeiro.';
+  }
+}
+
+const FIXOS = 4;
+function updateHero() {
+  const din   = document.querySelectorAll('#alertas-reforma .alert-card, #alertas-fin .alert-card').length;
+  const total = FIXOS + din;
+  const crit  = document.querySelectorAll('.alert-card.critical').length;
+  $('hero-num').textContent = total;
+  $('hero-sub').textContent = `${crit} crítico${crit!==1?'s':''} · reforma e finanças ao vivo`;
+  $('badge-alertas').textContent = total;
+  // Nav badge
+  const navBadge = $('nav-badge-painel');
+  if (crit > 0) { navBadge.textContent = crit; navBadge.style.display = 'block'; }
+  else navBadge.style.display = 'none';
+}
+
+async function reloadPainel() {
+  $('reforma-loading').style.display='block';
+  $('reforma-loading').textContent='Buscando dados…';
+  $('reforma-content').style.display='none';
+  $('fin-loading').style.display='block';
+  $('fin-loading').textContent='Buscando dados…';
+  $('fin-content').style.display='none';
+  $('fin-prox-section').style.display='none';
+  await Promise.all([loadReforma(), loadFinanceiro()]);
+}
+
+// ── CHAT ─────────────────────────────────────────────────────
+function scrollToBottom(smooth=true) {
+  chatMessages.scrollTo({top:chatMessages.scrollHeight, behavior:smooth?'smooth':'instant'});
+}
+
+function addChatMessage(role, text, time, imgUrls=[]) {
+  const row = document.createElement('div');
+  row.className = 'msg-row ' + role;
+  let inner = '';
+  if (role==='amanda') inner += `<div class="msg-avatar">A</div>`;
+  let imgsHtml = '';
+  if (imgUrls.length>0) imgsHtml = '<div class="msg-imgs">'+imgUrls.map(u=>`<img src="${esc(u)}" alt=""/>`).join('')+'</div>';
+  inner += `<div><div class="msg-bubble">${esc(text||'')}${imgsHtml}</div><div class="msg-time">${esc(time||'')}</div></div>`;
+  row.innerHTML = inner;
+  chatMessages.appendChild(row);
+  return row;
+}
+
+function addSystemMessage(text) {
+  const el = document.createElement('div');
+  el.className = 'system-msg';
+  el.textContent = text;
+  chatMessages.appendChild(el);
+}
+
+function addTypingIndicator() {
+  const row = document.createElement('div');
+  row.className = 'msg-row amanda'; row.id = 'typing-row';
+  row.innerHTML = `<div class="msg-avatar">A</div><div class="msg-bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
+  chatMessages.appendChild(row);
+  scrollToBottom();
+  return row;
+}
+
+function removeTypingIndicator() { const el=$('typing-row'); if(el) el.remove(); }
+
+async function loadRecentChatHistory() {
+  const { data, error } = await sb.from('amanda_conversations').select('*').order('created_at',{ascending:true}).limit(15);
+  if (error) {
+    if (error.code==='42P01' || error.message?.includes('does not exist')) {
+      edgeFnAvailable = false;
+      setupNotice.classList.add('show');
+      addSystemMessage('⚙️ Configure a Edge Function para ativar o chat. Veja SETUP-CHAT.md.');
+    }
+    return;
+  }
+  if (!data || data.length===0) { addSystemMessage('Olá! Sou a Amanda. O que posso fazer por você hoje?'); return; }
+  addSystemMessage('— Conversa recente —');
+  for (const row of data) {
+    const t = fmtShort(row.created_at);
+    addChatMessage('user', row.user_message, t);
+    addChatMessage('amanda', row.amanda_response, t);
+    conversationHist.push({role:'user',content:row.user_message});
+    conversationHist.push({role:'assistant',content:row.amanda_response});
+  }
+  scrollToBottom(false);
+}
+
+// File handling
+imgInput.addEventListener('change', e => {
+  for (const f of e.target.files) pendingFiles.push(f);
+  renderImagePreview();
+  e.target.value = '';
+  sendBtn.disabled = isStreaming || (!chatInput.value.trim() && pendingFiles.length===0);
+});
+
+function renderImagePreview() {
+  imgPreviewBar.innerHTML = '';
+  pendingFiles.forEach((f, idx) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'img-thumb';
+    if (f.type.startsWith('image/')) { const img=document.createElement('img'); img.src=URL.createObjectURL(f); wrap.appendChild(img); }
+    else { wrap.style.cssText='background:#eee;display:grid;place-items:center;font-size:11px;color:#666;'; wrap.textContent='PDF'; }
+    const rm=document.createElement('div'); rm.className='rm'; rm.textContent='×';
+    rm.onclick=()=>{ pendingFiles.splice(idx,1); renderImagePreview(); };
+    wrap.appendChild(rm); imgPreviewBar.appendChild(wrap);
+  });
+}
+
+async function compressImage(file) {
+  if (!file.type.startsWith('image/')) return file;
+  try {
+    const bitmap = await createImageBitmap(file);
+    const maxSide = 1200;
+    let {width, height} = bitmap;
+    if (Math.max(width,height)>maxSide) { const s=maxSide/Math.max(width,height); width=Math.round(width*s); height=Math.round(height*s); }
+    const canvas = new OffscreenCanvas(width, height);
+    canvas.getContext('2d').drawImage(bitmap,0,0,width,height);
+    const blob = await canvas.convertToBlob({type:'image/jpeg',quality:.80});
+    return new File([blob], file.name.replace(/\.[^.]+$/,'.jpg'), {type:'image/jpeg'});
+  } catch { return file; }
+}
+
+async function uploadFiles() {
+  const paths = [];
+  for (const f of pendingFiles) {
+    const compressed = await compressImage(f);
+    const ext = compressed.name.split('.').pop().toLowerCase();
+    const path = `${currentUser.id}/${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
+    const { error } = await sb.storage.from(BUCKET).upload(path, compressed, {contentType:compressed.type,upsert:false});
+    if (!error) paths.push({path, type:compressed.type, name:f.name});
+  }
+  return paths;
+}
+
+chatInput.addEventListener('input', () => {
+  chatInput.style.height='auto';
+  chatInput.style.height=Math.min(chatInput.scrollHeight,120)+'px';
+  sendBtn.disabled = isStreaming || (!chatInput.value.trim() && pendingFiles.length===0);
+});
+chatInput.addEventListener('keydown', e => { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();if(!sendBtn.disabled)doSend();} });
+sendBtn.addEventListener('click', doSend);
+
+async function doSend() {
+  const text = chatInput.value.trim();
+  if ((!text && pendingFiles.length===0) || isStreaming) return;
+  if (!edgeFnAvailable) { addSystemMessage('⚠️ Edge Function não configurada. Veja SETUP-CHAT.md para ativar o chat.'); return; }
+
+  isStreaming=true; sendBtn.disabled=true; chatInput.disabled=true;
+
+  let uploadedPaths=[], imageUrls=[];
+  if (pendingFiles.length>0) {
+    uploadedPaths = await uploadFiles();
+    for (const p of uploadedPaths) {
+      const { data: signed } = await sb.storage.from(BUCKET).createSignedUrl(p.path, 3600);
+      if (signed?.signedUrl) imageUrls.push(signed.signedUrl);
+    }
   }
 
-  // ── ADD MESSAGE TO CHAT UI ────────────────────────────────
-  function addChatMessage(role, text, time, imgUrls = []) {
-    const row = document.createElement('div');
-    row.className = 'msg-row ' + role;
+  const now = fmtShort(new Date().toISOString());
+  addChatMessage('user', text, now, imageUrls);
+  chatInput.value=''; chatInput.style.height='auto';
+  pendingFiles=[]; renderImagePreview();
+  scrollToBottom();
+  addTypingIndicator(); scrollToBottom();
 
-    let inner = '';
-    if (role === 'amanda') {
-      inner += `<div class="msg-avatar">A</div>`;
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) throw new Error('Sessão expirada. Recarregue a página.');
+
+    const response = await fetch(EDGE_FN_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${session.access_token}`},
+      body: JSON.stringify({message:text||'(imagem enviada)', history:conversationHist.slice(-MAX_HISTORY), images:uploadedPaths})
+    });
+
+    if (!response.ok) {
+      const errBody = await response.text();
+      if (response.status===404) { edgeFnAvailable=false; setupNotice.classList.add('show'); throw new Error('Edge Function não encontrada.'); }
+      throw new Error(errBody || `Erro ${response.status}`);
     }
 
-    const escapedText = escapeHtml(text || '');
-    let imgsHtml = '';
-    if (imgUrls.length > 0) {
-      imgsHtml = '<div class="msg-imgs">' + imgUrls.map(u => `<img src="${escapeHtml(u)}" alt="" />`).join('') + '</div>';
-    }
-
-    inner += `
-      <div>
-        <div class="msg-bubble">${escapedText}${imgsHtml}</div>
-        <div class="msg-time">${escapeHtml(time || '')}</div>
-      </div>`;
-
-    row.innerHTML = inner;
-    chatMessages.appendChild(row);
-    return row;
-  }
-
-  function addSystemMessage(text) {
-    const el = document.createElement('div');
-    el.className = 'system-msg';
-    el.textContent = text;
-    chatMessages.appendChild(el);
-  }
-
-  function addTypingIndicator() {
-    const row = document.createElement('div');
-    row.className = 'msg-row amanda';
-    row.id = 'typing-row';
-    row.innerHTML = `
-      <div class="msg-avatar">A</div>
-      <div class="msg-bubble">
-        <div class="typing-dots">
-          <span></span><span></span><span></span>
-        </div>
-      </div>`;
-    chatMessages.appendChild(row);
+    removeTypingIndicator();
+    const amandaRow = addChatMessage('amanda','',fmtShort(new Date().toISOString()));
+    const bubbleEl  = amandaRow.querySelector('.msg-bubble');
     scrollToBottom();
-    return row;
-  }
 
-  function removeTypingIndicator() {
-    const el = $('typing-row');
-    if (el) el.remove();
-  }
-
-  // ── LOAD RECENT CHAT HISTORY FROM DB ─────────────────────
-  async function loadRecentChatHistory() {
-    const { data, error } = await supabase
-      .from('amanda_conversations')
-      .select('*')
-      .order('created_at', { ascending: true })
-      .limit(15);
-
-    if (error) {
-      // Table might not exist yet — show setup notice
-      if (error.code === '42P01' || error.message?.includes('does not exist')) {
-        edgeFnAvailable = false;
-        setupNotice.classList.add('show');
-        addSystemMessage('⚙️ Configure a Edge Function para ativar o chat em tempo real. Veja SETUP-CHAT.md.');
-      }
-      return;
-    }
-
-    if (!data || data.length === 0) {
-      addSystemMessage('Olá! Sou a Amanda. O que posso fazer por você hoje?');
-      return;
-    }
-
-    addSystemMessage('— Conversa recente —');
-    for (const row of data) {
-      const t = formatTimeShort(row.created_at);
-      addChatMessage('user', row.user_message, t);
-      addChatMessage('amanda', row.amanda_response, t);
-      conversationHist.push({ role: 'user', content: row.user_message });
-      conversationHist.push({ role: 'assistant', content: row.amanda_response });
-    }
-    scrollToBottom(false);
-  }
-
-  // ── SEND MESSAGE ──────────────────────────────────────────
-  sendBtn.addEventListener('click', doSend);
-
-  async function doSend() {
-    const text = chatInput.value.trim();
-    if ((!text && pendingFiles.length === 0) || isStreaming) return;
-
-    if (!edgeFnAvailable) {
-      addSystemMessage('⚠️ Edge Function não configurada. Veja SETUP-CHAT.md para ativar o chat.');
-      return;
-    }
-
-    isStreaming = true;
-    sendBtn.disabled = true;
-    chatInput.disabled = true;
-
-    // Upload images first (if any)
-    let uploadedPaths = [];
-    let imageUrls = [];
-    if (pendingFiles.length > 0) {
-      uploadedPaths = await uploadFiles();
-      for (const p of uploadedPaths) {
-        const { data: signed } = await supabase.storage.from(BUCKET)
-          .createSignedUrl(p.path, 3600);
-        if (signed?.signedUrl) imageUrls.push(signed.signedUrl);
+    const reader=response.body.getReader(), decoder=new TextDecoder();
+    let buffer='', fullText='';
+    while (true) {
+      const {done,value}=await reader.read(); if(done) break;
+      buffer += decoder.decode(value,{stream:true});
+      const lines = buffer.split('\n'); buffer=lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const raw=line.slice(6).trim(); if(raw==='[DONE]') break;
+        try { const p=JSON.parse(raw); if(p.error) throw new Error(p.error); if(p.delta){fullText+=p.delta;bubbleEl.textContent=fullText;scrollToBottom();} }
+        catch(pe){ if(pe.message!=='Unexpected end of JSON input') throw pe; }
       }
     }
 
-    // Show user message
-    const now = formatTimeShort(new Date().toISOString());
-    addChatMessage('user', text, now, imageUrls);
-    chatInput.value = '';
-    chatInput.style.height = 'auto';
-    pendingFiles = [];
-    renderImagePreview();
-    scrollToBottom();
+    if (text) conversationHist.push({role:'user',content:text});
+    if (fullText) conversationHist.push({role:'assistant',content:fullText});
 
-    // Show typing indicator
-    addTypingIndicator();
-    scrollToBottom();
-
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('Sessão expirada. Recarregue a página.');
-
-      // Build history for context (last MAX_HISTORY messages)
-      const historySlice = conversationHist.slice(-MAX_HISTORY);
-
-      const response = await fetch(EDGE_FN_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
-        },
-        body: JSON.stringify({
-          message: text || '(imagem enviada)',
-          history: historySlice,
-          images: uploadedPaths
-        })
-      });
-
-      if (!response.ok) {
-        const errBody = await response.text();
-        if (response.status === 404) {
-          edgeFnAvailable = false;
-          setupNotice.classList.add('show');
-          throw new Error('Edge Function não encontrada. Configure conforme SETUP-CHAT.md.');
-        }
-        throw new Error(errBody || `Erro ${response.status}`);
-      }
-
-      // Stream response
-      removeTypingIndicator();
-      const amandaRow = addChatMessage('amanda', '', formatTimeShort(new Date().toISOString()));
-      const bubbleEl  = amandaRow.querySelector('.msg-bubble');
-      scrollToBottom();
-
-      const reader  = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer    = '';
-      let fullText  = '';
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop(); // keep incomplete line
-
-        for (const line of lines) {
-          if (!line.startsWith('data: ')) continue;
-          const raw = line.slice(6).trim();
-          if (raw === '[DONE]') break;
-          try {
-            const parsed = JSON.parse(raw);
-            if (parsed.error) throw new Error(parsed.error);
-            if (parsed.delta) {
-              fullText += parsed.delta;
-              bubbleEl.textContent = fullText;
-              scrollToBottom();
-            }
-          } catch (parseErr) {
-            if (parseErr.message !== 'Unexpected end of JSON input') throw parseErr;
-          }
-        }
-      }
-
-      // Update conversation history
-      if (text) conversationHist.push({ role: 'user', content: text });
-      if (fullText) conversationHist.push({ role: 'assistant', content: fullText });
-
-    } catch (err) {
-      removeTypingIndicator();
-      addSystemMessage('⚠️ ' + (err.message || 'Erro ao conectar com Amanda.'));
-    } finally {
-      isStreaming = false;
-      sendBtn.disabled = false;
-      chatInput.disabled = false;
-      chatInput.focus();
-    }
+  } catch(err) {
+    removeTypingIndicator();
+    addSystemMessage('⚠️ '+(err.message||'Erro ao conectar com Amanda.'));
+  } finally {
+    isStreaming=false; sendBtn.disabled=false; chatInput.disabled=false; chatInput.focus();
   }
+}
 
-  // ── HISTÓRICO ─────────────────────────────────────────────
-  async function loadHistorico() {
-    historicoList.innerHTML = '<div class="empty-state"><div class="icon">⏳</div>Carregando...</div>';
-
-    const { data, error } = await supabase
-      .from('amanda_conversations')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(50);
-
-    if (error) {
-      historicoList.innerHTML = `<div class="empty-state">
-        <div class="icon">⚙️</div>
-        Histórico não disponível ainda.<br>Configure a Edge Function e converse com Amanda para ver os registros aqui.
+// ── HISTÓRICO ─────────────────────────────────────────────────
+async function loadHistorico() {
+  historicoList.innerHTML = '<div class="empty-state"><div class="icon">⏳</div>Carregando…</div>';
+  const { data, error } = await sb.from('amanda_conversations').select('*').order('created_at',{ascending:false}).limit(50);
+  if (error) { historicoList.innerHTML=`<div class="empty-state"><div class="icon">⚙️</div>Histórico não disponível ainda.</div>`; return; }
+  if (!data||data.length===0) { historicoList.innerHTML=`<div class="empty-state"><div class="icon">💬</div>Nenhuma conversa ainda. Comece pelo Chat!</div>`; return; }
+  historicoList.innerHTML='';
+  for (const row of data) {
+    const item=document.createElement('div'); item.className='hist-item';
+    const preview = row.user_message ? (row.user_message.length>45?row.user_message.slice(0,45)+'…':row.user_message) : '(imagem)';
+    item.innerHTML=`
+      <div class="hist-header">
+        <div><div class="when">${fmtFull(row.created_at)}</div><div class="preview">${esc(preview)}</div></div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="hist-body">
+        <div class="hist-user-msg">${esc(row.user_message||'(imagem)')}</div>
+        <div class="hist-amanda-label">Amanda respondeu:</div>
+        <div class="hist-amanda-msg">${esc(row.amanda_response||'')}</div>
       </div>`;
-      return;
-    }
-
-    if (!data || data.length === 0) {
-      historicoList.innerHTML = `<div class="empty-state">
-        <div class="icon">💬</div>
-        Nenhuma conversa registrada ainda.<br>Comece a conversar com a Amanda na aba Chat!
-      </div>`;
-      return;
-    }
-
-    historicoList.innerHTML = '';
-    for (const row of data) {
-      const item = document.createElement('div');
-      item.className = 'hist-item';
-
-      const preview = row.user_message
-        ? (row.user_message.length > 45 ? row.user_message.slice(0, 45) + '…' : row.user_message)
-        : '(imagem)';
-
-      item.innerHTML = `
-        <div class="hist-header">
-          <div>
-            <div class="when">${formatTime(row.created_at)}</div>
-            <div class="preview">${escapeHtml(preview)}</div>
-          </div>
-          <span class="chevron">▾</span>
-        </div>
-        <div class="hist-body">
-          <div class="hist-user-msg">${escapeHtml(row.user_message || '(imagem)')}</div>
-          <div class="hist-amanda-label">Amanda respondeu:</div>
-          <div class="hist-amanda-msg">${escapeHtml(row.amanda_response || '')}</div>
-        </div>`;
-
-      item.querySelector('.hist-header').addEventListener('click', () => {
-        item.classList.toggle('open');
-      });
-
-      historicoList.appendChild(item);
-    }
+    item.querySelector('.hist-header').addEventListener('click',()=>item.classList.toggle('open'));
+    historicoList.appendChild(item);
   }
+}
 
-  // ── REALTIME ──────────────────────────────────────────────
-  function subscribeToConversations() {
-    supabase.channel('amanda-conversations-changes')
-      .on('postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'amanda_conversations' },
-        () => {
-          // Refresh histórico if that tab is active
-          const histTab = document.querySelector('.tab-btn[data-tab="historico"]');
-          if (histTab?.classList.contains('active')) loadHistorico();
-        })
-      .subscribe();
-  }
+// ── REALTIME ──────────────────────────────────────────────────
+function subscribeToConversations() {
+  sb.channel('amanda-convs').on('postgres_changes',{event:'INSERT',schema:'public',table:'amanda_conversations'},()=>{
+    const histBtn = document.querySelector('.nav-btn[data-view="historico"]');
+    if (histBtn?.classList.contains('active')) loadHistorico();
+  }).subscribe();
+}
 
-  // ── SERVICE WORKER ────────────────────────────────────────
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js').catch(() => {});
-  }
+// ── SERVICE WORKER ────────────────────────────────────────────
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('service-worker.js').catch(()=>{});
 
-  // ── BOOT ──────────────────────────────────────────────────
-  checkSession();
+// ── BOOT ──────────────────────────────────────────────────────
+checkSession();
 </script>
 </body>
 </html>

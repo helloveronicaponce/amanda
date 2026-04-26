@@ -1,13 +1,13 @@
 {
   "name": "Amanda — Assistente da Verô",
   "short_name": "Amanda",
-  "description": "Assistente pessoal da Verônica. Mande textos e fotos pra Amanda processar.",
+  "description": "Assistente pessoal da Verônica — chat, histórico e painel gerencial em um só app.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#fdfaf7",
-  "theme_color": "#f7c8d6",
+  "background_color": "#0F0F0F",
+  "theme_color": "#0F0F0F",
   "lang": "pt-BR",
   "icons": [
     {
