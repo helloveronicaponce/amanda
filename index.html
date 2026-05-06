@@ -864,37 +864,24 @@
 
         <!-- PENDÊNCIAS -->
         <div class="ppanel" id="ppanel-pendencias">
-          <div class="section">
-            <div class="section-header"><span class="capsule is-pink">Vence hoje <span class="dot">·</span> amanhã</span><span class="section-count">1 item</span></div>
-            <div class="item"><div class="item-marker urgent"></div><div class="item-text"><strong>Separar figurinos Festa Junina</strong> — base branca + chapéu palha + lenço azul + fitas — para os 4<span class="item-tag">escola</span><span class="item-tag">casa</span></div></div>
+          <div class="section" id="pend-section-hoje" style="display:none">
+            <div class="section-header"><span class="capsule is-pink">Vence hoje <span class="dot">·</span> amanhã</span><span class="section-count" id="pend-count-hoje"></span></div>
+            <div id="pend-list-hoje"></div>
           </div>
-          <div class="section">
-            <div class="section-header"><span class="capsule">Essa semana</span><span class="section-count">4 itens</span></div>
-            <div class="item"><div class="item-marker warn"></div><div class="item-text"><strong>Perguntar ao Lorenzo sobre OBAFOG</strong> (06/05) + confirmar custo transporte<span class="item-tag">escola</span></div></div>
-            <div class="item"><div class="item-marker warn"></div><div class="item-text"><strong>Enviar atestado dentista Leonardo no ClassApp</strong><span class="item-tag">escola</span><span class="item-tag">saúde</span></div></div>
-            <div class="item"><div class="item-marker warn"></div><div class="item-text"><strong>Comprar ingressos Festa Junina</strong> na secretaria — R$ 40 cada<span class="item-tag">escola</span></div></div>
-            <div class="item"><div class="item-marker warn"></div><div class="item-text"><strong>Levar 4 crianças pro exame de sangue</strong> — agendar lab Unimed<span class="item-tag">saúde</span></div></div>
+          <div class="section" id="pend-section-semana" style="display:none">
+            <div class="section-header"><span class="capsule">Essa semana</span><span class="section-count" id="pend-count-semana"></span></div>
+            <div id="pend-list-semana"></div>
           </div>
-          <div class="section">
+          <div class="section" id="pend-section-aberto" style="display:none">
             <div class="section-header"><span class="capsule">Em aberto</span></div>
-            <div class="item"><div class="item-marker"></div><div class="item-text">Comprar livro "A turma da rua Quinze" pra Lorenzo<span class="item-tag">criança</span></div></div>
-            <div class="item"><div class="item-marker"></div><div class="item-text">Contratar depilação a laser — Espaço Laser<span class="item-tag">pessoal</span></div></div>
-            <div class="item"><div class="item-marker"></div><div class="item-text">Verificar mudança TP4 → TP2<span class="item-tag">casa</span></div></div>
-            <div class="item"><div class="item-marker"></div><div class="item-text">Cancelar Totalpass do Lorenzo<span class="item-tag">pessoal</span></div></div>
-            <div class="item"><div class="item-marker"></div><div class="item-text">Fazer sobrancelha e levar cartão fidelidade<span class="item-tag">pessoal</span></div></div>
-            <div class="item"><div class="item-marker"></div><div class="item-text">Marcar massagem Face Ativa<span class="item-tag">pessoal</span></div></div>
-            <div class="item"><div class="item-marker"></div><div class="item-text">Marcar drenagem (Buddha Spa?)<span class="item-tag">pessoal</span></div></div>
-            <div class="item"><div class="item-marker"></div><div class="item-text">Levar Gael pra vacinar — conferir caderneta<span class="item-tag">saúde</span></div></div>
-            <div class="item"><div class="item-marker"></div><div class="item-text">Acompanhar sinistro do carro (Spin)<span class="item-tag">casa</span></div></div>
-            <div class="item"><div class="item-marker"></div><div class="item-text">Marcar oftalmo Lorenzo — retorno óculos<span class="item-tag">saúde</span></div></div>
-            <div class="item"><div class="item-marker"></div><div class="item-text">Artsmile — verificar plano de aparelho do Leo<span class="item-tag">saúde</span></div></div>
+            <div id="pend-list-aberto"></div>
           </div>
-          <div class="section">
-            <div class="section-header"><span class="capsule is-lime">Feito <span class="dot" style="color:var(--black)">·</span> Últimos 7 dias</span></div>
-            <div class="item"><div class="item-marker ok"></div><div class="item-text done">Marcar consulta endocrinopediatra Leo — 17/04</div></div>
-            <div class="item"><div class="item-marker ok"></div><div class="item-text done">Lembrar Lorenzo de revisar SAE Livro 1 — 22/04</div></div>
-            <div class="item"><div class="item-marker ok"></div><div class="item-text done">Unimed R$ 1.240 — paga</div></div>
+          <div class="section" id="pend-section-trabalho" style="display:none">
+            <div class="section-header"><span class="capsule" style="background:var(--black)">Trabalho</span></div>
+            <div id="pend-list-trabalho"></div>
           </div>
+          <div class="loading" id="pend-loading">Buscando pendências…</div>
+          <div class="empty" id="pend-empty" style="display:none">Nenhuma pendência em aberto 🎉</div>
         </div>
 
         <!-- WISHLIST -->
@@ -1234,6 +1221,87 @@ function updateHero() {
   else navBadge.style.display = 'none';
 }
 
+async function loadPendencias() {
+  try {
+    // Busca alertas_v2 (pendências pessoais)
+    const alertas = await sbGet('amanda_alertas_v2','?order=urgencia.desc&limit=50');
+    // Busca trabalho_demandas (tarefas profissionais)
+    const trabalho = await sbGet('amanda_trabalho_demandas','?status=neq.CONCLUIDO&order=prioridade.desc&limit=30');
+
+    const hoje = [];
+    const semana = [];
+    const aberto = [];
+
+    alertas.forEach(a => {
+      if (a.prazo === 'hoje') hoje.push(a);
+      else if (a.prazo === 'essa semana') semana.push(a);
+      else aberto.push(a);
+    });
+
+    function itemHTML(text, marker='') {
+      return `<div class="item"><div class="item-marker ${marker}"></div><div class="item-text">${esc(text)}</div></div>`;
+    }
+
+    function alertaToHTML(a, marker) {
+      const desc = a.acao_necessaria ? ` — <span style="font-size:12px;color:var(--black-60)">${esc(a.acao_necessaria)}</span>` : '';
+      return `<div class="item"><div class="item-marker ${marker}"></div><div class="item-text"><strong>${esc(a.titulo)}</strong>${desc}</div></div>`;
+    }
+
+    // Hoje
+    if (hoje.length > 0) {
+      $('pend-list-hoje').innerHTML = hoje.map(a => alertaToHTML(a, 'urgent')).join('');
+      $('pend-count-hoje').textContent = hoje.length + (hoje.length === 1 ? ' item' : ' itens');
+      $('pend-section-hoje').style.display = 'block';
+    }
+
+    // Essa semana
+    if (semana.length > 0) {
+      $('pend-list-semana').innerHTML = semana.map(a => alertaToHTML(a, 'warn')).join('');
+      $('pend-count-semana').textContent = semana.length + (semana.length === 1 ? ' item' : ' itens');
+      $('pend-section-semana').style.display = 'block';
+    }
+
+    // Em aberto
+    if (aberto.length > 0) {
+      $('pend-list-aberto').innerHTML = aberto.map(a => alertaToHTML(a, '')).join('');
+      $('pend-section-aberto').style.display = 'block';
+    }
+
+    // Trabalho
+    if (trabalho.length > 0) {
+      $('pend-list-trabalho').innerHTML = trabalho.map(t => {
+        const badge = `<span class="item-tag">${esc(t.cliente)}</span>`;
+        const prazo = t.due_date ? `<span class="item-date warn">${esc(t.due_date)}</span>` : '';
+        return `<div class="item"><div class="item-marker solid"></div><div class="item-text"><strong>${esc(t.titulo)}</strong>${badge}${t.descricao ? ' — ' + esc(t.descricao.slice(0,80)) : ''}</div>${prazo}</div>`;
+      }).join('');
+      $('pend-section-trabalho').style.display = 'block';
+    }
+
+    $('pend-loading').style.display = 'none';
+    const total = hoje.length + semana.length + aberto.length + trabalho.length;
+    if (total === 0) $('pend-empty').style.display = 'block';
+
+    // Atualiza badge alertas com pendências críticas
+    updateHeroWithPendencias(hoje.length, hoje.length + semana.length);
+
+  } catch(e) {
+    $('pend-loading').textContent = 'Erro ao carregar pendências.';
+    console.error('loadPendencias error:', e);
+  }
+}
+
+function updateHeroWithPendencias(criticas, urgentes) {
+  const din = document.querySelectorAll('#alertas-reforma .alert-card, #alertas-fin .alert-card').length;
+  const total = din + urgentes;
+  const crit = document.querySelectorAll('.alert-card.critical').length + criticas;
+  $('hero-num').textContent = total || '0';
+  $('hero-sub').textContent = `${crit} crítico${crit!==1?'s':''} · reforma, finanças e pendências ao vivo`;
+  $('badge-alertas').textContent = total || '0';
+  const navBadge = $('nav-badge-painel');
+  if (crit > 0) { navBadge.textContent = crit; navBadge.style.display = 'block'; }
+  else navBadge.style.display = 'none';
+}
+
 async function reloadPainel() {
   $('reforma-loading').style.display='block';
   $('reforma-loading').textContent='Buscando dados…';
@@ -1242,7 +1310,12 @@ async function reloadPainel() {
   $('fin-loading').textContent='Buscando dados…';
   $('fin-content').style.display='none';
   $('fin-prox-section').style.display='none';
-  await Promise.all([loadReforma(), loadFinanceiro()]);
+  // Reset pendências
+  $('pend-loading').style.display='block';
+  $('pend-loading').textContent='Buscando pendências…';
+  $('pend-empty').style.display='none';
+  ['pend-section-hoje','pend-section-semana','pend-section-aberto','pend-section-trabalho'].forEach(id=>$(id).style.display='none');
+  await Promise.all([loadReforma(), loadFinanceiro(), loadPendencias()]);
 }
 
 // ── CHAT ─────────────────────────────────────────────────────
