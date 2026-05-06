@@ -1947,6 +1947,10 @@ function pendMenuOpen(id, table, btn) {
   }, 50);
 }
 
+// ── EXPOR FUNÇÕES AO ESCOPO GLOBAL (módulo ES não expõe automaticamente) ──
+window.pendAction   = pendAction;
+window.pendMenuOpen = pendMenuOpen;
+
 // ── SERVICE WORKER ────────────────────────────────────────────
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('service-worker.js').catch(()=>{});
 
