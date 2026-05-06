@@ -346,6 +346,65 @@
 .prazo-opt:active, .prazo-opt:hover { background: rgba(255,252,244,.08); }
 .prazo-opt.opt-concluir { color: var(--lime); font-weight: 700; }
 .prazo-opt.opt-sep { height: 1px; background: rgba(255,252,244,.08); padding: 0; margin: 4px 0; pointer-events: none; }
+
+/* ── Nova pendência ── */
+.pend-add-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 100%; padding: 13px 16px; margin-bottom: 12px;
+  background: var(--black); color: var(--off-white);
+  border: none; border-radius: var(--r-md);
+  font-family: var(--font-d); font-size: 13px; font-weight: 700;
+  letter-spacing: .05em; cursor: pointer;
+  transition: opacity .15s;
+}
+.pend-add-btn:active { opacity: .75; }
+
+/* ── Drawer ── */
+.drawer-overlay {
+  position: fixed; inset: 0; background: rgba(15,15,15,.5);
+  z-index: 1000; display: none; backdrop-filter: blur(2px);
+}
+.drawer-overlay.open { display: block; }
+.drawer {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 1001;
+  background: var(--off-white); border-radius: var(--r-lg) var(--r-lg) 0 0;
+  padding: 12px 20px calc(24px + env(safe-area-inset-bottom));
+  transform: translateY(100%);
+  transition: transform .32s cubic-bezier(0.32,0.72,0,1);
+  max-height: 92dvh; overflow-y: auto;
+}
+.drawer.open { transform: translateY(0); }
+.drawer-handle { width: 36px; height: 4px; background: var(--black-12); border-radius: 4px; margin: 0 auto 18px; }
+.drawer-title { font-weight: 900; font-size: 18px; letter-spacing: -.02em; margin-bottom: 20px; }
+.drawer-field { margin-bottom: 16px; }
+.drawer-label { display: block; font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--black-30); margin-bottom: 8px; }
+.drawer-input {
+  width: 100%; padding: 12px 14px;
+  border: 1.5px solid var(--black-12); border-radius: var(--r-md);
+  font-family: var(--font-d); font-size: 15px; color: var(--black);
+  background: white; outline: none;
+  transition: border-color .15s;
+}
+.drawer-input:focus { border-color: var(--pink); }
+.drawer-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.dchip {
+  padding: 7px 14px; border-radius: var(--r-pill);
+  border: 1.5px solid var(--black-12); background: white;
+  font-family: var(--font-d); font-size: 12px; font-weight: 700;
+  color: var(--black-60); cursor: pointer; transition: all .15s;
+}
+.dchip.active { background: var(--black); color: var(--off-white); border-color: var(--black); }
+.dchip:active { opacity: .7; }
+.drawer-save {
+  width: 100%; margin-top: 8px; padding: 16px;
+  background: var(--pink); border: none; border-radius: var(--r-pill);
+  font-family: var(--font-d); font-size: 14px; font-weight: 700;
+  letter-spacing: .06em; text-transform: uppercase;
+  color: var(--off-white); cursor: pointer;
+  transition: opacity .15s;
+}
+.drawer-save:active { opacity: .8; }
+.drawer-save:disabled { opacity: .4; cursor: not-allowed; }
     .item-tag  { display: inline-block; font-size: 9px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; padding: 2px 7px; border-radius: var(--r-pill); background: var(--black-06); color: var(--black-60); margin-left: 4px; }
     .item-date { font-family: var(--font-i); font-style: italic; font-size: 11px; color: var(--black-30); white-space: nowrap; margin-left: auto; padding-left: 8px; }
     .item-date.urgent { font-family: var(--font-d); font-style: normal; font-weight: 700; font-size: 9px; letter-spacing: .07em; text-transform: uppercase; color: var(--pink); }
@@ -875,6 +934,7 @@
 
         <!-- PENDÊNCIAS -->
         <div class="ppanel" id="ppanel-pendencias">
+          <button class="pend-add-btn" onclick="pendDrawerOpen()">+ Nova pendência</button>
           <div class="section" id="pend-section-hoje" style="display:none">
             <div class="section-header"><span class="capsule is-pink">Vence hoje <span class="dot">·</span> amanhã</span><span class="section-count" id="pend-count-hoje"></span></div>
             <div id="pend-list-hoje"></div>
@@ -959,6 +1019,52 @@
 
   <!-- Menu flutuante de prazo -->
   <div class="prazo-menu" id="prazo-menu-global"></div>
+
+  <!-- Drawer: nova pendência -->
+  <div class="drawer-overlay" id="pend-drawer-overlay" onclick="pendDrawerClose()"></div>
+  <div class="drawer" id="pend-drawer">
+    <div class="drawer-handle"></div>
+    <div class="drawer-title">Nova pendência</div>
+
+    <div class="drawer-field">
+      <label class="drawer-label">Título</label>
+      <input class="drawer-input" id="pend-new-titulo" type="text" placeholder="Ex: Marcar dentista do Gael" autocomplete="off" />
+    </div>
+
+    <div class="drawer-field">
+      <label class="drawer-label">Prazo</label>
+      <div class="drawer-chips" id="pend-new-prazo-chips">
+        <button class="dchip" data-val="hoje" onclick="drawerChipSelect('pend-new-prazo-chips',this)">Hoje</button>
+        <button class="dchip" data-val="essa semana" onclick="drawerChipSelect('pend-new-prazo-chips',this)">Essa semana</button>
+        <button class="dchip active" data-val="em aberto" onclick="drawerChipSelect('pend-new-prazo-chips',this)">Em aberto</button>
+      </div>
+    </div>
+
+    <div class="drawer-field">
+      <label class="drawer-label">Tipo</label>
+      <div class="drawer-chips" id="pend-new-tipo-chips">
+        <button class="dchip active" data-val="pessoal" onclick="drawerChipSelect('pend-new-tipo-chips',this)">Pessoal</button>
+        <button class="dchip" data-val="trabalho" onclick="drawerChipSelect('pend-new-tipo-chips',this)">Trabalho</button>
+      </div>
+    </div>
+
+    <div class="drawer-field" id="pend-new-cliente-wrap" style="display:none">
+      <label class="drawer-label">Cliente / Projeto</label>
+      <div class="drawer-chips" id="pend-new-cliente-chips">
+        <button class="dchip active" data-val="eFleet" onclick="drawerChipSelect('pend-new-cliente-chips',this)">eFleet</button>
+        <button class="dchip" data-val="Trezion" onclick="drawerChipSelect('pend-new-cliente-chips',this)">Trezion</button>
+        <button class="dchip" data-val="NOVA" onclick="drawerChipSelect('pend-new-cliente-chips',this)">NOVA</button>
+        <button class="dchip" data-val="pessoal" onclick="drawerChipSelect('pend-new-cliente-chips',this)">Outro</button>
+      </div>
+    </div>
+
+    <div class="drawer-field">
+      <label class="drawer-label">Detalhe <span style="opacity:.4;font-weight:400">(opcional)</span></label>
+      <input class="drawer-input" id="pend-new-detalhe" type="text" placeholder="O que precisa fazer?" autocomplete="off" />
+    </div>
+
+    <button class="drawer-save" id="pend-save-btn" onclick="pendSave()">Salvar</button>
+  </div>
 
 <script type="module">
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -1122,6 +1228,17 @@ async function sbGet(path, params='') {
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
+}
+
+async function sbPost(path, body) {
+  const { data: { session } } = await sb.auth.getSession();
+  const token = session?.access_token || SUPABASE_KEY;
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    method: 'POST',
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
 }
 
 async function sbPatch(path, filter, body) {
@@ -1948,8 +2065,83 @@ function pendMenuOpen(id, table, btn) {
 }
 
 // ── EXPOR FUNÇÕES AO ESCOPO GLOBAL (módulo ES não expõe automaticamente) ──
-window.pendAction   = pendAction;
-window.pendMenuOpen = pendMenuOpen;
+window.pendAction    = pendAction;
+window.pendMenuOpen  = pendMenuOpen;
+window.pendDrawerOpen  = pendDrawerOpen;
+window.pendDrawerClose = pendDrawerClose;
+window.drawerChipSelect = drawerChipSelect;
+window.pendSave      = pendSave;
+
+function pendDrawerOpen() {
+  $('pend-drawer-overlay').classList.add('open');
+  $('pend-drawer').classList.add('open');
+  setTimeout(() => $('pend-new-titulo').focus(), 350);
+}
+
+function pendDrawerClose() {
+  $('pend-drawer-overlay').classList.remove('open');
+  $('pend-drawer').classList.remove('open');
+}
+
+function drawerChipSelect(groupId, btn) {
+  document.querySelectorAll(`#${groupId} .dchip`).forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  // Mostrar/esconder campo de cliente quando tipo muda
+  if (groupId === 'pend-new-tipo-chips') {
+    $('pend-new-cliente-wrap').style.display = btn.dataset.val === 'trabalho' ? 'block' : 'none';
+  }
+}
+
+async function pendSave() {
+  const titulo  = $('pend-new-titulo').value.trim();
+  if (!titulo) { $('pend-new-titulo').focus(); return; }
+
+  const prazo   = document.querySelector('#pend-new-prazo-chips .dchip.active')?.dataset.val || 'em aberto';
+  const tipo    = document.querySelector('#pend-new-tipo-chips .dchip.active')?.dataset.val || 'pessoal';
+  const detalhe = $('pend-new-detalhe').value.trim();
+  const cliente = document.querySelector('#pend-new-cliente-chips .dchip.active')?.dataset.val || 'pessoal';
+
+  const btn = $('pend-save-btn');
+  btn.disabled = true;
+  btn.textContent = 'Salvando…';
+
+  try {
+    if (tipo === 'trabalho') {
+      const urgMap = { 'hoje': 9, 'essa semana': 6, 'em aberto': 3 };
+      await sbPost('amanda_trabalho_demandas', {
+        cliente, titulo, descricao: detalhe || null,
+        status: 'NOVO', prioridade: urgMap[prazo] || 3,
+        due_date: prazo === 'hoje' ? new Date().toISOString().slice(0,10) : prazo === 'essa semana' ? new Date(Date.now()+5*86400000).toISOString().slice(0,10) : null
+      });
+    } else {
+      const urgMap = { 'hoje': 8, 'essa semana': 5, 'em aberto': 3 };
+      await sbPost('amanda_alertas_v2', {
+        titulo, categoria: prazo === 'hoje' ? 'CRITICO' : 'IMPORTANTE',
+        acao_necessaria: detalhe || null,
+        prazo, urgencia: urgMap[prazo] || 3
+      });
+    }
+
+    // Limpar e fechar
+    $('pend-new-titulo').value = '';
+    $('pend-new-detalhe').value = '';
+    pendDrawerClose();
+
+    // Recarregar lista
+    $('pend-loading').style.display = 'block';
+    $('pend-loading').textContent = 'Atualizando…';
+    $('pend-empty').style.display = 'none';
+    ['pend-section-hoje','pend-section-semana','pend-section-aberto','pend-section-trabalho'].forEach(id => { const s = $(id); if(s) s.style.display='none'; });
+    await loadPendencias();
+
+  } catch(err) {
+    console.error('pendSave error', err);
+    btn.textContent = 'Erro — tentar novamente';
+  } finally {
+    btn.disabled = false;
+    if (btn.textContent === 'Salvando…') btn.textContent = 'Salvar';
+  }
+}
 
 // ── SERVICE WORKER ────────────────────────────────────────────
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('service-worker.js').catch(()=>{});
