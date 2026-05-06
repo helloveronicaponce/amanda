@@ -334,7 +334,18 @@
     .item-marker.solid  { background: var(--black); }
     .item-text { flex: 1; color: var(--black); line-height: 1.45; }
     .item-text strong { font-weight: 700; }
-    .item-text.done { text-decoration: line-through; color: var(--black-30); }
+    .item-actions { display: flex; gap: 4px; margin-left: auto; padding-left: 8px; flex-shrink: 0; align-items: center; }
+.act-btn { border: none; border-radius: var(--r-pill); font-size: 10px; font-weight: 700; letter-spacing: .05em; cursor: pointer; padding: 4px 9px; line-height: 1.4; transition: opacity .15s; white-space: nowrap; }
+.act-btn:active { opacity: .7; }
+.act-btn.done  { background: var(--lime); color: var(--black); }
+.act-btn.snooze { background: var(--black-06); color: var(--black-60); }
+.act-btn.danger { background: var(--pink-20); color: var(--black); }
+.prazo-menu { position: fixed; z-index: 9999; background: var(--black); border-radius: var(--r-md); padding: 8px 0; box-shadow: 0 8px 32px rgba(0,0,0,.35); min-width: 160px; display: none; }
+.prazo-menu.open { display: block; }
+.prazo-opt { padding: 10px 16px; font-size: 13px; color: var(--off-white); cursor: pointer; transition: background .1s; }
+.prazo-opt:active, .prazo-opt:hover { background: rgba(255,252,244,.08); }
+.prazo-opt.opt-concluir { color: var(--lime); font-weight: 700; }
+.prazo-opt.opt-sep { height: 1px; background: rgba(255,252,244,.08); padding: 0; margin: 4px 0; pointer-events: none; }
     .item-tag  { display: inline-block; font-size: 9px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; padding: 2px 7px; border-radius: var(--r-pill); background: var(--black-06); color: var(--black-60); margin-left: 4px; }
     .item-date { font-family: var(--font-i); font-style: italic; font-size: 11px; color: var(--black-30); white-space: nowrap; margin-left: auto; padding-left: 8px; }
     .item-date.urgent { font-family: var(--font-d); font-style: normal; font-weight: 700; font-size: 9px; letter-spacing: .07em; text-transform: uppercase; color: var(--pink); }
@@ -946,6 +957,9 @@
 
 </div><!-- /app -->
 
+  <!-- Menu flutuante de prazo -->
+  <div class="prazo-menu" id="prazo-menu-global"></div>
+
 <script type="module">
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
@@ -1110,6 +1124,27 @@ async function sbGet(path, params='') {
   return res.json();
 }
 
+async function sbPatch(path, filter, body) {
+  const { data: { session } } = await sb.auth.getSession();
+  const token = session?.access_token || SUPABASE_KEY;
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}${filter}`, {
+    method: 'PATCH',
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+}
+
+async function sbDelete(path, filter) {
+  const { data: { session } } = await sb.auth.getSession();
+  const token = session?.access_token || SUPABASE_KEY;
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}${filter}`, {
+    method: 'DELETE',
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+}
+
 async function loadReforma() {
   try {
     const rows = await sbGet('reforma_items','?select=comodo_label,descricao,status,prazo&order=ordem_comodo.asc,ordem_item.asc');
@@ -1224,9 +1259,10 @@ function updateHero() {
 async function loadPendencias() {
   try {
     // Busca alertas_v2 (pendências pessoais)
-    const alertas = await sbGet('amanda_alertas_v2','?order=urgencia.desc&limit=50');
+    const alertas = await sbGet('amanda_alertas_v2','?select=id,titulo,prazo,urgencia,acao_necessaria,categoria&order=urgencia.desc&limit=50');
     // Busca trabalho_demandas (tarefas profissionais)
-    const trabalho = await sbGet('amanda_trabalho_demandas','?status=neq.CONCLUIDO&order=prioridade.desc&limit=30');
+    const trabalho = await sbGet('amanda_trabalho_demandas','?select=id,titulo,cliente,descricao,status,due_date,prioridade&status=neq.CONCLUIDO&order=prioridade.desc&limit=30');
+    console.log('[Amanda] alertas:', alertas.length, '| trabalho:', trabalho.length);
 
     const hoje = [];
     const semana = [];
@@ -1238,13 +1274,85 @@ async function loadPendencias() {
       else aberto.push(a);
     });
 
-    function itemHTML(text, marker='') {
-      return `<div class="item"><div class="item-marker ${marker}"></div><div class="item-text">${esc(text)}</div></div>`;
+    // Menu de prazo flutuante
+    let activeMenu = null;
+    function closePrazoMenu() {
+      if (activeMenu) { activeMenu.classList.remove('open'); activeMenu = null; }
+    }
+    document.addEventListener('click', e => {
+      if (activeMenu && !activeMenu.contains(e.target)) closePrazoMenu();
+    }, { capture: true });
+
+    function showPrazoMenu(btn, id, table) {
+      closePrazoMenu();
+      const menu = document.getElementById('prazo-menu-global');
+      menu.innerHTML = `
+        <div class="prazo-opt opt-concluir" data-action="concluir">✓ Concluir</div>
+        <div class="prazo-opt opt-sep"></div>
+        <div class="prazo-opt" data-action="hoje">🔴 Mover para hoje</div>
+        <div class="prazo-opt" data-action="semana">🟡 Mover para essa semana</div>
+        <div class="prazo-opt" data-action="aberto">⚪ Mover para em aberto</div>
+      `;
+      const rect = btn.getBoundingClientRect();
+      menu.style.top = (rect.bottom + window.scrollY + 4) + 'px';
+      menu.style.left = Math.min(rect.left, window.innerWidth - 170) + 'px';
+      menu.classList.add('open');
+      activeMenu = menu;
+
+      menu.querySelectorAll('.prazo-opt[data-action]').forEach(opt => {
+        opt.addEventListener('click', async e => {
+          e.stopPropagation();
+          const action = opt.dataset.action;
+          closePrazoMenu();
+          const el = document.querySelector(`[data-pend-id="${id}"]`);
+          if (el) { el.style.opacity = '0.4'; el.style.pointerEvents = 'none'; }
+          try {
+            if (table === 'alertas') {
+              if (action === 'concluir') {
+                await sbDelete('amanda_alertas_v2', `?id=eq.${id}`);
+              } else {
+                const prazoMap = { hoje: 'hoje', semana: 'essa semana', aberto: 'em aberto' };
+                await sbPatch('amanda_alertas_v2', `?id=eq.${id}`, { prazo: prazoMap[action] });
+              }
+            } else {
+              if (action === 'concluir') {
+                await sbPatch('amanda_trabalho_demandas', `?id=eq.${id}`, { status: 'CONCLUIDO', updated_at: new Date().toISOString() });
+              } else {
+                const prazoMap = { hoje: new Date().toISOString().slice(0,10), semana: new Date(Date.now()+5*86400000).toISOString().slice(0,10), aberto: null };
+                await sbPatch('amanda_trabalho_demandas', `?id=eq.${id}`, { due_date: prazoMap[action], updated_at: new Date().toISOString() });
+              }
+            }
+            if (el) el.remove();
+          } catch(err) {
+            console.error('action error', err);
+            if (el) { el.style.opacity = '1'; el.style.pointerEvents = ''; }
+          }
+        });
+      });
     }
 
     function alertaToHTML(a, marker) {
-      const desc = a.acao_necessaria ? ` — <span style="font-size:12px;color:var(--black-60)">${esc(a.acao_necessaria)}</span>` : '';
-      return `<div class="item"><div class="item-marker ${marker}"></div><div class="item-text"><strong>${esc(a.titulo)}</strong>${desc}</div></div>`;
+      const desc = a.acao_necessaria ? `<div style="font-size:11px;color:var(--black-60);margin-top:2px">${esc(a.acao_necessaria)}</div>` : '';
+      return `<div class="item" data-pend-id="${esc(a.id)}">
+        <div class="item-marker ${marker}"></div>
+        <div class="item-text"><strong>${esc(a.titulo)}</strong>${desc}</div>
+        <div class="item-actions">
+          <button class="act-btn done" onclick="event.stopPropagation();pendAction('${esc(a.id)}','alertas','concluir',this)">✓</button>
+          <button class="act-btn snooze" onclick="event.stopPropagation();pendMenuOpen('${esc(a.id)}','alertas',this)">⋯</button>
+        </div>
+      </div>`;
+    }
+
+    function trabalhoToHTML(t) {
+      const badge = `<span class="item-tag">${esc(t.cliente)}</span>`;
+      return `<div class="item" data-pend-id="${esc(t.id)}">
+        <div class="item-marker solid"></div>
+        <div class="item-text"><strong>${esc(t.titulo)}</strong>${badge}${t.descricao ? `<div style="font-size:11px;color:var(--black-60);margin-top:2px">${esc(t.descricao.slice(0,80))}</div>` : ''}</div>
+        <div class="item-actions">
+          <button class="act-btn done" onclick="event.stopPropagation();pendAction('${esc(t.id)}','trabalho','concluir',this)">✓</button>
+          <button class="act-btn snooze" onclick="event.stopPropagation();pendMenuOpen('${esc(t.id)}','trabalho',this)">⋯</button>
+        </div>
+      </div>`;
     }
 
     // Hoje
@@ -1269,11 +1377,7 @@ async function loadPendencias() {
 
     // Trabalho
     if (trabalho.length > 0) {
-      $('pend-list-trabalho').innerHTML = trabalho.map(t => {
-        const badge = `<span class="item-tag">${esc(t.cliente)}</span>`;
-        const prazo = t.due_date ? `<span class="item-date warn">${esc(t.due_date)}</span>` : '';
-        return `<div class="item"><div class="item-marker solid"></div><div class="item-text"><strong>${esc(t.titulo)}</strong>${badge}${t.descricao ? ' — ' + esc(t.descricao.slice(0,80)) : ''}</div>${prazo}</div>`;
-      }).join('');
+      $('pend-list-trabalho').innerHTML = trabalho.map(t => trabalhoToHTML(t)).join('');
       $('pend-section-trabalho').style.display = 'block';
     }
 
@@ -1739,6 +1843,108 @@ function renderTimeline(events) {
     const row = $(`tl-row-${targetH}`);
     if (row) setTimeout(() => row.scrollIntoView({behavior:'smooth',block:'start'}), 100);
   }
+}
+
+// ── PENDÊNCIAS — AÇÕES GLOBAIS ────────────────────────────────
+async function pendAction(id, table, action, btn) {
+  const el = document.querySelector(`[data-pend-id="${id}"]`);
+  if (el) { el.style.opacity = '0.4'; el.style.pointerEvents = 'none'; }
+  btn.textContent = '…';
+  try {
+    if (table === 'alertas') {
+      if (action === 'concluir') await sbDelete('amanda_alertas_v2', `?id=eq.${id}`);
+    } else {
+      if (action === 'concluir') await sbPatch('amanda_trabalho_demandas', `?id=eq.${id}`, { status: 'CONCLUIDO', updated_at: new Date().toISOString() });
+    }
+    if (el) el.remove();
+  } catch(err) {
+    console.error('pendAction error', err);
+    if (el) { el.style.opacity = '1'; el.style.pointerEvents = ''; }
+    btn.textContent = '✓';
+  }
+}
+
+function pendMenuOpen(id, table, btn) {
+  const menu = document.getElementById('prazo-menu-global');
+  if (menu.classList.contains('open') && menu.dataset.activeId === id) {
+    menu.classList.remove('open');
+    return;
+  }
+  menu.dataset.activeId = id;
+  const opts = table === 'alertas'
+    ? [
+        { label: '✓ Concluir', cls: 'opt-concluir', action: 'concluir' },
+        { label: '─', cls: 'opt-sep', action: null },
+        { label: '🔴 Hoje', action: 'hoje' },
+        { label: '🟡 Essa semana', action: 'semana' },
+        { label: '⚪ Em aberto', action: 'aberto' },
+      ]
+    : [
+        { label: '✓ Concluir', cls: 'opt-concluir', action: 'concluir' },
+        { label: '─', cls: 'opt-sep', action: null },
+        { label: '🔴 Prazo: hoje', action: 'hoje' },
+        { label: '🟡 Prazo: essa semana', action: 'semana' },
+        { label: '⚪ Sem prazo', action: 'aberto' },
+      ];
+
+  menu.innerHTML = opts.map(o =>
+    o.action === null
+      ? `<div class="prazo-opt opt-sep"></div>`
+      : `<div class="prazo-opt ${o.cls||''}" data-action="${o.action}">${o.label}</div>`
+  ).join('');
+
+  const rect = btn.getBoundingClientRect();
+  menu.style.top = (rect.bottom + 4) + 'px';
+  menu.style.left = Math.min(rect.left, window.innerWidth - 175) + 'px';
+  menu.classList.add('open');
+
+  menu.querySelectorAll('.prazo-opt[data-action]').forEach(opt => {
+    opt.addEventListener('click', async e => {
+      e.stopPropagation();
+      const action = opt.dataset.action;
+      menu.classList.remove('open');
+      const el = document.querySelector(`[data-pend-id="${id}"]`);
+      if (el) { el.style.opacity = '0.4'; el.style.pointerEvents = 'none'; }
+      try {
+        if (table === 'alertas') {
+          if (action === 'concluir') {
+            await sbDelete('amanda_alertas_v2', `?id=eq.${id}`);
+            if (el) el.remove();
+          } else {
+            const prazoMap = { hoje: 'hoje', semana: 'essa semana', aberto: 'em aberto' };
+            await sbPatch('amanda_alertas_v2', `?id=eq.${id}`, { prazo: prazoMap[action] });
+            if (el) el.remove();
+            // Recarrega pendências para mostrar na seção certa
+            const pendLoading = document.getElementById('pend-loading');
+            if (pendLoading) { pendLoading.style.display='block'; pendLoading.textContent='Atualizando…'; }
+            ['pend-section-hoje','pend-section-semana','pend-section-aberto','pend-section-trabalho'].forEach(sid=>{ const s=document.getElementById(sid); if(s) s.style.display='none'; });
+            await loadPendencias();
+          }
+        } else {
+          if (action === 'concluir') {
+            await sbPatch('amanda_trabalho_demandas', `?id=eq.${id}`, { status: 'CONCLUIDO', updated_at: new Date().toISOString() });
+            if (el) el.remove();
+          } else {
+            const d = new Date();
+            const prazoMap = { hoje: d.toISOString().slice(0,10), semana: new Date(d.getTime()+5*86400000).toISOString().slice(0,10), aberto: null };
+            await sbPatch('amanda_trabalho_demandas', `?id=eq.${id}`, { due_date: prazoMap[action], updated_at: new Date().toISOString() });
+            if (el) el.remove();
+            const pendLoading = document.getElementById('pend-loading');
+            if (pendLoading) { pendLoading.style.display='block'; pendLoading.textContent='Atualizando…'; }
+            ['pend-section-hoje','pend-section-semana','pend-section-aberto','pend-section-trabalho'].forEach(sid=>{ const s=document.getElementById(sid); if(s) s.style.display='none'; });
+            await loadPendencias();
+          }
+        }
+      } catch(err) {
+        console.error('menu action error', err);
+        if (el) { el.style.opacity='1'; el.style.pointerEvents=''; }
+      }
+    }, { once: true });
+  });
+
+  setTimeout(() => {
+    document.addEventListener('click', () => menu.classList.remove('open'), { once: true });
+  }, 50);
 }
 
 // ── SERVICE WORKER ────────────────────────────────────────────
