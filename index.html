@@ -2117,7 +2117,7 @@ async function pendSave() {
       const urgMap = { 'hoje': 8, 'essa semana': 5, 'em aberto': 3 };
       await sbPost('amanda_alertas_v2', {
         titulo, categoria: prazo === 'hoje' ? 'CRITICO' : 'IMPORTANTE',
-        acao_necessaria: detalhe || null,
+        acao_necessaria: detalhe || titulo,
         prazo, urgencia: urgMap[prazo] || 3
       });
     }
